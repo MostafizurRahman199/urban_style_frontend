@@ -336,7 +336,7 @@ export default function ProductsAdminPage() {
 
                         {/* Price */}
                         <td className="py-4 font-mono font-bold">
-                          ${prod.price.toFixed(2)}
+                          ${Number(prod.price).toFixed(2)}
                         </td>
 
                         {/* Stock */}

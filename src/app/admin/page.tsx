@@ -9,7 +9,32 @@ import {
   useGetLowStockQuery,
 } from '@/redux/services/api';
 import { DollarSign, ShoppingCart, Package, AlertTriangle, TrendingUp, RefreshCw } from 'lucide-react';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
+import dynamic from 'next/dynamic';
+
+const ResponsiveContainer = dynamic(
+  () => import('recharts').then((mod) => mod.ResponsiveContainer),
+  { ssr: false }
+);
+const AreaChart = dynamic(
+  () => import('recharts').then((mod) => mod.AreaChart),
+  { ssr: false }
+);
+const Area = dynamic(
+  () => import('recharts').then((mod) => mod.Area),
+  { ssr: false }
+);
+const XAxis = dynamic(
+  () => import('recharts').then((mod) => mod.XAxis),
+  { ssr: false }
+);
+const YAxis = dynamic(
+  () => import('recharts').then((mod) => mod.YAxis),
+  { ssr: false }
+);
+const Tooltip = dynamic(
+  () => import('recharts').then((mod) => mod.Tooltip),
+  { ssr: false }
+);
 
 export default function AdminDashboardPage() {
   const [revenueRange, setRevenueRange] = useState<'day' | 'week' | 'month'>('day');

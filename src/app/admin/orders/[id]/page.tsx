@@ -208,7 +208,7 @@ export default function OrderDetailsPage({ params }: PageProps) {
 
           <div className="divide-y divide-card-border/50">
             {order.items?.map((item: any) => {
-              const subtotal = item.price * item.quantity;
+              const subtotal = Number(item.price) * item.quantity;
               return (
                 <div key={item.id} className="flex justify-between items-center py-4 gap-3">
                   <div className="flex items-center gap-3">
@@ -218,7 +218,7 @@ export default function OrderDetailsPage({ params }: PageProps) {
                     <div>
                       <h4 className="text-xs font-bold text-white max-w-xs truncate">{item.product?.name || 'Item'}</h4>
                       <span className="text-[10px] text-muted-text uppercase font-semibold">
-                        Price: ${item.price.toFixed(2)} | Color: <span className="text-accent font-bold">{item.color}</span>
+                        Price: ${Number(item.price).toFixed(2)} | Color: <span className="text-accent font-bold">{item.color}</span>
                       </span>
                     </div>
                   </div>
@@ -232,7 +232,7 @@ export default function OrderDetailsPage({ params }: PageProps) {
 
             <div className="pt-4 flex justify-between items-center">
               <span className="text-sm uppercase font-bold text-white">Grand Total</span>
-              <span className="text-base font-mono font-bold text-accent">${order.totalAmount.toFixed(2)}</span>
+              <span className="text-base font-mono font-bold text-accent">${Number(order.totalAmount).toFixed(2)}</span>
             </div>
           </div>
         </div>

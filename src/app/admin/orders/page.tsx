@@ -168,7 +168,7 @@ export default function OrdersAdminPage() {
 
                       {/* Total */}
                       <td className="py-4 font-mono font-bold text-accent">
-                        ${order.totalAmount.toFixed(2)}
+                        ${Number(order.totalAmount).toFixed(2)}
                       </td>
 
                       {/* Order Status */}

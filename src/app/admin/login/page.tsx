@@ -37,7 +37,7 @@ export default function AdminLoginPage() {
 
     try {
       const response = await login({ email, password }).unwrap();
-      dispatch(setCredentials({ token: response.access_token }));
+      dispatch(setCredentials({ token: response.accessToken || response.access_token }));
       router.push('/admin');
     } catch (err: any) {
       console.error('Login failed:', err);

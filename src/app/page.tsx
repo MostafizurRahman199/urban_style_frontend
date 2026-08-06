@@ -316,7 +316,7 @@ function ProductCard({ product }: ProductCardProps) {
 
         <div className="flex items-center justify-between pt-2 border-t border-card-border/50">
           <span className="text-accent font-mono font-bold text-sm sm:text-base">
-            ${product.price.toFixed(2)}
+            ${Number(product.price).toFixed(2)}
           </span>
           <Link
             href={`/products/${product.id}`}

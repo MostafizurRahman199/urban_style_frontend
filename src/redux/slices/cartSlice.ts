@@ -55,7 +55,10 @@ const cartSlice = createSlice({
         const newQty = state.items[existingIndex].quantity + quantity;
         state.items[existingIndex].quantity = Math.min(newQty, action.payload.stock);
       } else {
-        state.items.push(action.payload);
+        state.items.push({
+          ...action.payload,
+          price: Number(action.payload.price),
+        });
       }
 
       state.totalAmount = calculateTotal(state.items);
