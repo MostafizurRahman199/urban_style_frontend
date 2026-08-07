@@ -199,7 +199,7 @@ export default function ProductDetailPage({ params }: PageProps) {
               </h1>
               <div className="flex items-center gap-4 pt-2">
                 <span className="text-accent font-mono font-bold text-2xl sm:text-3xl">
-                  ${Number(product.price).toFixed(2)}
+                  ৳{Number(product.price).toFixed(2)}
                 </span>
                 {isOutOfStock ? (
                   <span className="text-red-500 text-xs font-semibold uppercase tracking-wider">

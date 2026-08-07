@@ -57,7 +57,7 @@ export default function AdminDashboardPage() {
   const kpis = [
     {
       name: 'Total Revenue',
-      value: summary ? `$${summary.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '$0.00',
+      value: summary ? `৳${summary.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}` : '৳0.00',
       icon: DollarSign,
       color: 'text-accent',
       borderColor: 'border-accent/20',
@@ -271,13 +271,13 @@ export default function AdminDashboardPage() {
                     </div>
                     <div>
                       <h4 className="text-xs font-bold text-white line-clamp-1">{p.name}</h4>
-                      <p className="text-[10px] text-muted-text uppercase font-semibold">Price: ${p.price}</p>
+                      <p className="text-[10px] text-muted-text uppercase font-semibold">Price: ৳{p.price}</p>
                     </div>
                   </div>
                   <div className="text-right">
                     <span className="text-accent font-mono text-xs font-bold block">{p.quantitySold} Sold</span>
                     <span className="text-[9px] text-muted-text uppercase font-semibold">
-                      ${(p.quantitySold * p.price).toLocaleString()} Rev
+                      ৳{(p.quantitySold * p.price).toLocaleString()} Rev
                     </span>
                   </div>
                 </div>

@@ -93,7 +93,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                               {item.name}
                             </Link>
                           </h3>
-                           <p className="ml-4 text-accent font-mono">${(Number(item.price) * item.quantity).toFixed(2)}</p>
+                           <p className="ml-4 text-accent font-mono">৳{(Number(item.price) * item.quantity).toFixed(2)}</p>
                         </div>
                         <p className="mt-1 text-xs text-muted-text">
                           Color: <span className="text-white uppercase font-medium">{item.color}</span>
@@ -138,7 +138,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <div className="border-t border-card-border px-4 py-6 bg-card-bg">
                 <div className="flex justify-between text-base font-medium text-white mb-4">
                   <p>Subtotal</p>
-                  <p className="text-accent font-mono text-lg">${Number(totalAmount).toFixed(2)}</p>
+                  <p className="text-accent font-mono text-lg">৳{Number(totalAmount).toFixed(2)}</p>
                 </div>
                 <p className="mt-0.5 text-xs text-muted-text mb-6">
                   Shipping and taxes calculated at checkout.

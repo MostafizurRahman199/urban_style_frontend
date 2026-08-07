@@ -218,13 +218,13 @@ export default function OrderDetailsPage({ params }: PageProps) {
                     <div>
                       <h4 className="text-xs font-bold text-white max-w-xs truncate">{item.product?.name || 'Item'}</h4>
                       <span className="text-[10px] text-muted-text uppercase font-semibold">
-                        Price: ${Number(item.price).toFixed(2)} | Color: <span className="text-accent font-bold">{item.color}</span>
+                        Price: ৳{Number(item.price).toFixed(2)} | Color: <span className="text-accent font-bold">{item.color}</span>
                       </span>
                     </div>
                   </div>
                   <div className="text-right">
                     <span className="text-white font-mono text-xs block font-bold">Qty: {item.quantity}</span>
-                    <span className="text-accent font-mono text-xs font-bold">${subtotal.toFixed(2)}</span>
+                    <span className="text-accent font-mono text-xs font-bold">৳{subtotal.toFixed(2)}</span>
                   </div>
                 </div>
               );
@@ -232,7 +232,7 @@ export default function OrderDetailsPage({ params }: PageProps) {
 
             <div className="pt-4 flex justify-between items-center">
               <span className="text-sm uppercase font-bold text-white">Grand Total</span>
-              <span className="text-base font-mono font-bold text-accent">${Number(order.totalAmount).toFixed(2)}</span>
+              <span className="text-base font-mono font-bold text-accent">৳{Number(order.totalAmount).toFixed(2)}</span>
             </div>
           </div>
         </div>

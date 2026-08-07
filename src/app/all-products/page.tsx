@@ -403,7 +403,7 @@ function ProductCard({ product }: ProductCardProps) {
 
         <div className="flex items-center justify-between pt-2 border-t border-card-border/50">
           <span className="text-accent font-mono font-bold text-sm sm:text-base">
-            ${Number(product.price).toFixed(2)}
+            ৳{Number(product.price).toFixed(2)}
           </span>
           <span className="text-[10px] font-bold uppercase tracking-wider text-white group-hover:text-accent transition-colors border border-card-border group-hover:border-accent/40 px-2.5 py-1 rounded">
             Explore
