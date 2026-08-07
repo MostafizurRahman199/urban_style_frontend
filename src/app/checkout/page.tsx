@@ -44,6 +44,7 @@ export default function CheckoutPage() {
       productId: item.productId,
       quantity: item.quantity,
       color: item.color,
+      size: item.size || undefined,
     }));
 
     const orderPayload = {
@@ -259,7 +260,7 @@ export default function CheckoutPage() {
               <div className="space-y-4">
                 <div className="max-h-72 overflow-y-auto space-y-3 pr-2 scrollbar-thin">
                   {items.map((item) => (
-                    <div key={`${item.productId}-${item.color}`} className="flex justify-between items-center gap-3 border-b border-card-border/30 pb-3">
+                    <div key={`${item.productId}-${item.color}-${item.size || ''}`} className="flex justify-between items-center gap-3 border-b border-card-border/30 pb-3">
                       <div className="flex items-center gap-3">
                         <div className="h-12 w-12 rounded border border-card-border overflow-hidden bg-black flex-shrink-0 flex items-center justify-center">
                           {item.imageUrl ? (
@@ -272,7 +273,7 @@ export default function CheckoutPage() {
                         <div>
                           <h4 className="text-xs font-semibold text-white line-clamp-1">{item.name}</h4>
                           <span className="text-[10px] text-muted-text uppercase">
-                            Color: {item.color} | Qty: {item.quantity}
+                            Color: {item.color}{item.size ? ` | Size: ${item.size}` : ''} | Qty: {item.quantity}
                           </span>
                         </div>
                       </div>

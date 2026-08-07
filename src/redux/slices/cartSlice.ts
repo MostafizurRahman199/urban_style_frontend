@@ -6,6 +6,7 @@ export interface CartItem {
   price: number;
   quantity: number;
   color: string;
+  size?: string;
   imageUrl?: string;
   stock: number;
 }
@@ -45,9 +46,9 @@ const cartSlice = createSlice({
   initialState,
   reducers: {
     addToCart: (state, action: PayloadAction<CartItem>) => {
-      const { productId, color, quantity } = action.payload;
+      const { productId, color, size, quantity } = action.payload;
       const existingIndex = state.items.findIndex(
-        (item) => item.productId === productId && item.color === color
+        (item) => item.productId === productId && item.color === color && (item.size || '') === (size || '')
       );
 
       if (existingIndex > -1) {
@@ -68,11 +69,11 @@ const cartSlice = createSlice({
     },
     updateQuantity: (
       state,
-      action: PayloadAction<{ productId: string; color: string; quantity: number }>
+      action: PayloadAction<{ productId: string; color: string; size?: string; quantity: number }>
     ) => {
-      const { productId, color, quantity } = action.payload;
+      const { productId, color, size, quantity } = action.payload;
       const index = state.items.findIndex(
-        (item) => item.productId === productId && item.color === color
+        (item) => item.productId === productId && item.color === color && (item.size || '') === (size || '')
       );
 
       if (index > -1) {
@@ -87,11 +88,11 @@ const cartSlice = createSlice({
     },
     removeFromCart: (
       state,
-      action: PayloadAction<{ productId: string; color: string }>
+      action: PayloadAction<{ productId: string; color: string; size?: string }>
     ) => {
-      const { productId, color } = action.payload;
+      const { productId, color, size } = action.payload;
       state.items = state.items.filter(
-        (item) => !(item.productId === productId && item.color === color)
+        (item) => !(item.productId === productId && item.color === color && (item.size || '') === (size || ''))
       );
 
       state.totalAmount = calculateTotal(state.items);

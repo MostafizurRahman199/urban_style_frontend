@@ -34,15 +34,19 @@ export default function ProductDetailPage({ params }: PageProps) {
 
   // Local States
   const [selectedColor, setSelectedColor] = useState<string>('');
+  const [selectedSize, setSelectedSize] = useState<string>('');
   const [quantity, setQuantity] = useState<number>(1);
   const [activeImageIdx, setActiveImageIdx] = useState<number>(0);
   const [isAdded, setIsAdded] = useState<boolean>(false);
   const [isVideoModalOpen, setIsVideoModalOpen] = useState<boolean>(false);
 
-  // Initialize selected color once product details are loaded
+  // Initialize selected color & size once product details are loaded
   React.useEffect(() => {
     if (product && product.colors && product.colors.length > 0) {
       setSelectedColor(product.colors[0]);
+    }
+    if (product && product.sizes && product.sizes.length > 0) {
+      setSelectedSize(product.sizes[0]);
     }
   }, [product]);
 
@@ -103,6 +107,7 @@ export default function ProductDetailPage({ params }: PageProps) {
         price: product.discountPrice ? product.discountPrice : product.price,
         quantity,
         color: selectedColor || 'Standard',
+        size: selectedSize || undefined,
         imageUrl: imgUrl,
         stock: product.quantity,
       })
@@ -123,6 +128,7 @@ export default function ProductDetailPage({ params }: PageProps) {
         price: product.discountPrice ? product.discountPrice : product.price,
         quantity,
         color: selectedColor || 'Standard',
+        size: selectedSize || undefined,
         imageUrl: imgUrl,
         stock: product.quantity,
       })
@@ -271,6 +277,30 @@ export default function ProductDetailPage({ params }: PageProps) {
                       }`}
                     >
                       {color}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Sizes choice (Only if product has sizes) */}
+            {product.sizes && product.sizes.length > 0 && (
+              <div className="space-y-3 pt-2">
+                <span className="text-xs uppercase tracking-widest text-muted-text font-bold">
+                  Select Size: <span className="text-white uppercase font-bold ml-1">{selectedSize}</span>
+                </span>
+                <div className="flex flex-wrap gap-2">
+                  {product.sizes.map((sz: string) => (
+                    <button
+                      key={sz}
+                      onClick={() => setSelectedSize(sz)}
+                      className={`px-4 py-2 border rounded text-xs font-bold uppercase tracking-wider transition-colors ${
+                        selectedSize === sz
+                          ? 'border-accent bg-accent text-black'
+                          : 'border-card-border bg-card-bg text-white hover:border-white/50'
+                      }`}
+                    >
+                      {sz}
                     </button>
                   ))}
                 </div>

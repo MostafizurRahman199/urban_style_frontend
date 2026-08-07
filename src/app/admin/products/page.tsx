@@ -13,6 +13,8 @@ import {
 import { Plus, Edit2, Trash2, X, Check, ShoppingBag, Eye, Star, Upload, Trash, Image as ImageIcon, AlertCircle } from 'lucide-react';
 import RichTextEditor from '@/components/RichTextEditor';
 
+const STANDARD_SIZES = ['XS', 'S', 'M', 'L', 'XL', 'XXL (2XL)', 'XXXL (3XL)', '4XL', '5XL'];
+
 export default function ProductsAdminPage() {
   // Query Filter States
   const [searchQuery, setSearchQuery] = useState('');
@@ -48,6 +50,9 @@ export default function ProductsAdminPage() {
   const [quantity, setQuantity] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [colorsInput, setColorsInput] = useState('');
+  const [selectedSizesMap, setSelectedSizesMap] = useState<{
+    [key: string]: { enabled: boolean; customDetail: string };
+  }>({});
   const [videoUrl, setVideoUrl] = useState('');
   const [isPopular, setIsPopular] = useState(false);
   const [isActive, setIsActive] = useState(true);
@@ -66,6 +71,52 @@ export default function ProductsAdminPage() {
     setTimeout(() => setMsg(null), 4000);
   };
 
+  const populateSizesMap = (sizesArray: string[] = []) => {
+    const map: { [key: string]: { enabled: boolean; customDetail: string } } = {};
+    STANDARD_SIZES.forEach((sz) => {
+      map[sz] = { enabled: false, customDetail: '' };
+    });
+
+    sizesArray.forEach((szStr) => {
+      if (!szStr) return;
+      const match = szStr.match(/^([^(]+)(?:\(([^)]+)\))?$/);
+      if (match) {
+        const key = match[1].trim();
+        const detail = match[2] ? match[2].trim() : '';
+        map[key] = { enabled: true, customDetail: detail };
+      } else {
+        map[szStr] = { enabled: true, customDetail: '' };
+      }
+    });
+
+    setSelectedSizesMap(map);
+  };
+
+  const buildSizesArray = () => {
+    const result: string[] = [];
+    STANDARD_SIZES.forEach((szKey) => {
+      const entry = selectedSizesMap[szKey];
+      if (entry && entry.enabled) {
+        const detail = entry.customDetail.trim();
+        if (detail) {
+          result.push(`${szKey} (${detail})`);
+        } else {
+          result.push(szKey);
+        }
+      }
+    });
+    Object.keys(selectedSizesMap).forEach((key) => {
+      if (!STANDARD_SIZES.includes(key)) {
+        const entry = selectedSizesMap[key];
+        if (entry && entry.enabled) {
+          const detail = entry.customDetail.trim();
+          result.push(detail ? `${key} (${detail})` : key);
+        }
+      }
+    });
+    return result;
+  };
+
   const resetForm = () => {
     setName('');
     setDescription('');
@@ -74,6 +125,7 @@ export default function ProductsAdminPage() {
     setQuantity('');
     setCategoryId('');
     setColorsInput('');
+    populateSizesMap([]);
     setVideoUrl('');
     setIsPopular(false);
     setIsActive(true);
@@ -115,6 +167,10 @@ export default function ProductsAdminPage() {
 
     colorsArray.forEach((c) => formData.append('colors[]', c));
 
+    // Handle sizes array
+    const sizesArray = buildSizesArray();
+    sizesArray.forEach((s) => formData.append('sizes[]', s));
+
     // Handle general image files
     if (selectedFiles) {
       for (let i = 0; i < selectedFiles.length; i++) {
@@ -153,6 +209,7 @@ export default function ProductsAdminPage() {
     setQuantity(String(product.quantity));
     setCategoryId(product.categoryId);
     setColorsInput(product.colors?.join(', ') || '');
+    populateSizesMap(product.sizes || []);
     setVideoUrl(product.videoUrl || '');
     setIsPopular(product.isPopular);
     setIsActive(product.isActive);
@@ -168,6 +225,8 @@ export default function ProductsAdminPage() {
       .map((c) => c.trim())
       .filter((c) => c !== '');
 
+    const sizesArray = buildSizesArray();
+
     const payload = {
       id: selectedProduct.id,
       name,
@@ -179,6 +238,7 @@ export default function ProductsAdminPage() {
       isPopular,
       isActive,
       colors: colorsArray,
+      sizes: sizesArray,
       ...(videoUrl.trim() && { videoUrl: videoUrl.trim() }),
     };
 
@@ -590,6 +650,53 @@ export default function ProductsAdminPage() {
                   />
                 </div>
 
+                <div className="space-y-2 border-t border-card-border/40 pt-3">
+                  <label className="text-xs uppercase tracking-widest text-muted-text font-bold flex items-center justify-between">
+                    <span>Product Sizes</span>
+                    <span className="text-[10px] text-accent font-normal lowercase">Check size & type measurement (e.g. 28 inch)</span>
+                  </label>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-1 scrollbar-thin p-2 bg-input-bg border border-input-border rounded">
+                    {STANDARD_SIZES.map((szKey) => {
+                      const entry = selectedSizesMap[szKey] || { enabled: false, customDetail: '' };
+                      return (
+                        <div key={szKey} className="flex items-center gap-2 bg-card-bg p-1.5 rounded border border-card-border/60">
+                          <input
+                            type="checkbox"
+                            id={`sz-create-${szKey}`}
+                            checked={entry.enabled}
+                            onChange={(e) => {
+                              setSelectedSizesMap({
+                                ...selectedSizesMap,
+                                [szKey]: { ...entry, enabled: e.target.checked },
+                              });
+                            }}
+                            className="accent-accent h-3.5 w-3.5 cursor-pointer"
+                          />
+                          <label htmlFor={`sz-create-${szKey}`} className="text-xs font-bold text-white uppercase cursor-pointer min-w-[55px]">
+                            {szKey}
+                          </label>
+
+                          {entry.enabled && (
+                            <input
+                              type="text"
+                              placeholder="e.g. 28 inch"
+                              value={entry.customDetail}
+                              onChange={(e) => {
+                                setSelectedSizesMap({
+                                  ...selectedSizesMap,
+                                  [szKey]: { ...entry, customDetail: e.target.value },
+                                });
+                              }}
+                              className="w-full bg-black border border-input-border focus:border-accent text-white px-2 py-0.5 rounded text-[11px] outline-none transition-colors"
+                            />
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
                 <div className="space-y-1">
                   <label className="text-xs uppercase tracking-widest text-muted-text font-bold">YouTube Video URL (Optional)</label>
                   <input
@@ -825,6 +932,53 @@ export default function ProductsAdminPage() {
                       onChange={(e) => setColorsInput(e.target.value)}
                       className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors"
                     />
+                  </div>
+
+                  <div className="space-y-2 border-t border-card-border/40 pt-3">
+                    <label className="text-xs uppercase tracking-widest text-muted-text font-bold flex items-center justify-between">
+                      <span>Product Sizes</span>
+                      <span className="text-[10px] text-accent font-normal lowercase">Check size & type measurement (e.g. 28 inch)</span>
+                    </label>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-1 scrollbar-thin p-2 bg-input-bg border border-input-border rounded">
+                      {STANDARD_SIZES.map((szKey) => {
+                        const entry = selectedSizesMap[szKey] || { enabled: false, customDetail: '' };
+                        return (
+                          <div key={szKey} className="flex items-center gap-2 bg-card-bg p-1.5 rounded border border-card-border/60">
+                            <input
+                              type="checkbox"
+                              id={`sz-edit-${szKey}`}
+                              checked={entry.enabled}
+                              onChange={(e) => {
+                                setSelectedSizesMap({
+                                  ...selectedSizesMap,
+                                  [szKey]: { ...entry, enabled: e.target.checked },
+                                });
+                              }}
+                              className="accent-accent h-3.5 w-3.5 cursor-pointer"
+                            />
+                            <label htmlFor={`sz-edit-${szKey}`} className="text-xs font-bold text-white uppercase cursor-pointer min-w-[55px]">
+                              {szKey}
+                            </label>
+
+                            {entry.enabled && (
+                              <input
+                                type="text"
+                                placeholder="e.g. 28 inch"
+                                value={entry.customDetail}
+                                onChange={(e) => {
+                                  setSelectedSizesMap({
+                                    ...selectedSizesMap,
+                                    [szKey]: { ...entry, customDetail: e.target.value },
+                                  });
+                                }}
+                                className="w-full bg-black border border-input-border focus:border-accent text-white px-2 py-0.5 rounded text-[11px] outline-none transition-colors"
+                              />
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
 
                   <div className="space-y-1">

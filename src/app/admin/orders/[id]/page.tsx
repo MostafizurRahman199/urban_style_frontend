@@ -279,40 +279,64 @@ export default function OrderDetailsPage({ params }: PageProps) {
 
         {/* Order Items list */}
         <div className="lg:col-span-7 bg-card-bg border border-card-border rounded-lg p-6 space-y-4 print:border-none print:p-0">
-          <h2 className="text-sm font-bold uppercase tracking-wider border-b border-card-border pb-3 print:text-black print:border-black">
-            Purchased Products
+          <h2 className="text-base font-black uppercase tracking-wider border-b border-card-border pb-3 print:text-black print:border-black flex items-center justify-between">
+            <span>Purchased Products</span>
+            <span className="text-xs font-semibold text-muted-text print:text-gray-600 font-mono">
+              {order.items?.length || 0} {order.items?.length === 1 ? 'Item' : 'Items'}
+            </span>
           </h2>
 
-          <div className="divide-y divide-card-border/50">
+          <div className="divide-y divide-card-border/60">
             {order.items?.map((item: any) => {
               const subtotal = Number(item.price) * item.quantity;
               return (
-                <div key={item.id} className="flex justify-between items-center py-4 gap-3">
-                  <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 border border-card-border bg-black rounded overflow-hidden flex-shrink-0 flex items-center justify-center print:hidden">
-                      <ShoppingBag className="h-6 w-6 text-muted-text/30" />
+                <div key={item.id} className="flex flex-col sm:flex-row justify-between items-start sm:items-center py-5 gap-4">
+                  <div className="flex items-start gap-4 flex-1">
+                    <div className="h-14 w-14 border border-card-border bg-black rounded-lg overflow-hidden flex-shrink-0 flex items-center justify-center print:hidden shadow-inner mt-0.5">
+                      <ShoppingBag className="h-7 w-7 text-accent" />
                     </div>
-                    <div>
-                      <h4 className="text-xs font-bold text-white max-w-xs truncate print:text-black">{item.product?.name || 'Item'}</h4>
-                      <span className="text-[9px] font-mono text-muted-text uppercase block mb-1 print:text-gray-500">
-                        ID: {item.productId}
-                      </span>
-                      <span className="text-[10px] text-muted-text uppercase font-semibold print:text-gray-700">
-                        Price: ৳{Number(item.price).toFixed(2)} | Color: <span className="text-accent font-bold print:text-black">{item.color}</span>
+                    <div className="space-y-2">
+                      <h3 className="text-base sm:text-lg font-extrabold text-white tracking-wide leading-snug print:text-black">
+                        {item.product?.name || 'Item'}
+                      </h3>
+                      
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-xs font-mono font-semibold text-muted-text print:text-gray-700">
+                          Price: <strong className="text-white font-mono print:text-black">৳{Number(item.price).toFixed(2)}</strong>
+                        </span>
+
+                        <span className="inline-flex items-center px-3 py-1 rounded bg-accent/20 border border-accent/40 text-accent font-extrabold text-xs uppercase tracking-wider print:border-black print:text-black print:bg-gray-100">
+                          Color: {item.color}
+                        </span>
+
+                        {item.size && (
+                          <span className="inline-flex items-center px-3 py-1 rounded bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 font-extrabold text-xs uppercase tracking-wider print:border-black print:text-black print:bg-gray-100">
+                            Size: {item.size}
+                          </span>
+                        )}
+                      </div>
+
+                      <span className="text-[10px] font-mono text-muted-text uppercase block print:text-gray-500">
+                        Product ID: {item.productId}
                       </span>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <span className="text-white font-mono text-xs block font-bold print:text-black">Qty: {item.quantity}</span>
-                    <span className="text-accent font-mono text-xs font-bold print:text-black">৳{subtotal.toFixed(2)}</span>
+
+                  <div className="flex sm:flex-col justify-between sm:items-end w-full sm:w-auto pt-2 sm:pt-0 border-t sm:border-t-0 border-card-border/30">
+                    <span className="inline-block bg-input-bg border border-input-border text-white text-sm sm:text-base font-black font-mono px-3.5 py-1 rounded print:text-black print:border-black print:bg-gray-100">
+                      Qty: {item.quantity}
+                    </span>
+                    <span className="text-lg sm:text-xl font-mono font-black text-accent print:text-black sm:mt-1.5">
+                      ৳{subtotal.toFixed(2)}
+                    </span>
                   </div>
                 </div>
               );
             })}
 
-            <div className="pt-4 flex justify-between items-center print:border-t print:border-black">
-              <span className="text-sm uppercase font-bold text-white print:text-black">Grand Total</span>
-              <span className="text-base font-mono font-bold text-accent print:text-black">৳{Number(order.totalAmount).toFixed(2)}</span>
+            <div className="pt-5 flex justify-between items-center print:border-t-2 print:border-black">
+              <span className="text-base uppercase font-extrabold text-white print:text-black">Grand Total</span>
+              <span className="text-xl sm:text-2xl font-mono font-black text-accent print:text-black">৳{Number(order.totalAmount).toFixed(2)}</span>
             </div>
           </div>
         </div>

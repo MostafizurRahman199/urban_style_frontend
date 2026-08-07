@@ -20,11 +20,11 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
 
   const handleQtyChange = (item: CartItem, newQty: number) => {
     if (newQty < 1) return;
-    dispatch(updateQuantity({ productId: item.productId, color: item.color, quantity: newQty }));
+    dispatch(updateQuantity({ productId: item.productId, color: item.color, size: item.size, quantity: newQty }));
   };
 
-  const handleRemove = (productId: string, color: string) => {
-    dispatch(removeFromCart({ productId, color }));
+  const handleRemove = (productId: string, color: string, size?: string) => {
+    dispatch(removeFromCart({ productId, color, size }));
   };
 
   return (
@@ -68,7 +68,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               ) : (
                 items.map((item, idx) => (
                   <div
-                    key={`${item.productId}-${item.color}`}
+                    key={`${item.productId}-${item.color}-${item.size || ''}`}
                     className="flex py-4 border-b border-card-border/50 animate-fade-in"
                     style={{ animationDelay: `${idx * 0.05}s` }}
                   >
@@ -95,9 +95,19 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           </h3>
                            <p className="ml-4 text-accent font-mono">৳{(Number(item.price) * item.quantity).toFixed(2)}</p>
                         </div>
-                        <p className="mt-1 text-xs text-muted-text">
-                          Color: <span className="text-white uppercase font-medium">{item.color}</span>
-                        </p>
+                        <div className="mt-1 flex items-center gap-2 flex-wrap text-xs text-muted-text">
+                          <span>
+                            Color: <span className="text-white uppercase font-medium">{item.color}</span>
+                          </span>
+                          {item.size && (
+                            <>
+                              <span>•</span>
+                              <span>
+                                Size: <span className="text-white uppercase font-medium">{item.size}</span>
+                              </span>
+                            </>
+                          )}
+                        </div>
                       </div>
                       <div className="flex-1 flex items-end justify-between text-sm">
                         <div className="flex items-center border border-card-border rounded bg-card-bg">
@@ -119,7 +129,7 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                         <div className="flex">
                           <button
                             type="button"
-                            onClick={() => handleRemove(item.productId, item.color)}
+                            onClick={() => handleRemove(item.productId, item.color, item.size)}
                             className="font-medium text-red-500 hover:text-red-400 flex items-center gap-1 transition-colors"
                           >
                             <Trash2 className="h-4 w-4" />
