@@ -26,6 +26,7 @@ export default function BannersAdminPage() {
   const [isActive, setIsActive] = useState(true);
   const [sortOrder, setSortOrder] = useState('0');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [selectedMobileFile, setSelectedMobileFile] = useState<File | null>(null);
 
   // Status
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -41,12 +42,13 @@ export default function BannersAdminPage() {
     setIsActive(true);
     setSortOrder('0');
     setSelectedFile(null);
+    setSelectedMobileFile(null);
   };
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedFile) {
-      showMsg('error', 'An image file is required for new banners.');
+      showMsg('error', 'A desktop image file is required for new banners.');
       return;
     }
 
@@ -56,6 +58,9 @@ export default function BannersAdminPage() {
     formData.append('isActive', String(isActive));
     formData.append('sortOrder', sortOrder);
     formData.append('image', selectedFile);
+    if (selectedMobileFile) {
+      formData.append('mobileImage', selectedMobileFile);
+    }
 
     try {
       await createBanner(formData).unwrap();
@@ -75,6 +80,7 @@ export default function BannersAdminPage() {
     setIsActive(banner.isActive);
     setSortOrder(String(banner.sortOrder));
     setSelectedFile(null);
+    setSelectedMobileFile(null);
     setIsEditOpen(true);
   };
 
@@ -89,6 +95,9 @@ export default function BannersAdminPage() {
     formData.append('sortOrder', sortOrder);
     if (selectedFile) {
       formData.append('image', selectedFile);
+    }
+    if (selectedMobileFile) {
+      formData.append('mobileImage', selectedMobileFile);
     }
 
     try {
@@ -123,7 +132,7 @@ export default function BannersAdminPage() {
             Banners <span className="text-accent">Manager</span>
           </h1>
           <p className="text-xs text-muted-text uppercase tracking-widest mt-1">
-            Configure slides for the storefront home page hero carousel
+            Configure desktop & mobile hero slides for storefront home page
           </p>
         </div>
         <button
@@ -177,31 +186,55 @@ export default function BannersAdminPage() {
                 className="bg-black border border-card-border rounded overflow-hidden flex flex-col hover:border-accent/30 transition-colors"
               >
                 {/* Image display */}
-                <div className="aspect-[21/9] bg-card-bg relative overflow-hidden flex items-center justify-center border-b border-card-border">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={banner.imageUrl} alt={banner.title || 'Banner'} className="w-full h-full object-cover" />
-                  <div className="absolute top-2 right-2 flex gap-1">
-                    <span
-                      className={`px-2 py-0.5 rounded text-[8px] font-extrabold uppercase border flex items-center gap-1 ${
-                        banner.isActive
-                          ? 'bg-green-600/10 border-green-500/20 text-green-500'
-                          : 'bg-red-500/10 border-red-500/25 text-red-500'
-                      }`}
-                    >
-                      {banner.isActive ? (
-                        <>
-                          <Eye className="h-3 w-3" /> Visible
-                        </>
-                      ) : (
-                        <>
-                          <EyeOff className="h-3 w-3" /> Hidden
-                        </>
-                      )}
-                    </span>
-                    <span className="px-2 py-0.5 rounded text-[8px] font-extrabold uppercase border bg-accent/10 border-accent/20 text-accent flex items-center gap-1">
-                      <ArrowUpDown className="h-3 w-3" /> Sort: {banner.sortOrder}
+                <div className="grid grid-cols-1 sm:grid-cols-2 bg-card-bg border-b border-card-border divide-y sm:divide-y-0 sm:divide-x divide-card-border">
+                  {/* Desktop Preview */}
+                  <div className="relative aspect-[16/9] overflow-hidden flex flex-col items-center justify-center bg-black">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={banner.imageUrl} alt={banner.title || 'Desktop Banner'} className="w-full h-full object-cover" />
+                    <span className="absolute bottom-2 left-2 bg-black/80 px-2 py-0.5 rounded text-[8px] font-extrabold uppercase text-accent border border-accent/30">
+                      Desktop Banner
                     </span>
                   </div>
+
+                  {/* Mobile Preview */}
+                  <div className="relative aspect-[16/9] overflow-hidden flex items-center justify-center bg-black/60">
+                    {banner.mobileImageUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img src={banner.mobileImageUrl} alt={banner.title || 'Mobile Banner'} className="w-full h-full object-cover" />
+                    ) : (
+                      <div className="text-center px-4">
+                        <span className="text-[10px] text-muted-text uppercase font-bold block">No Mobile Image</span>
+                        <span className="text-[8px] text-accent/70 uppercase block mt-0.5">(Uses Desktop Image)</span>
+                      </div>
+                    )}
+                    <span className="absolute bottom-2 left-2 bg-black/80 px-2 py-0.5 rounded text-[8px] font-extrabold uppercase text-white/80 border border-card-border">
+                      Mobile Banner
+                    </span>
+                  </div>
+                </div>
+
+                {/* Status Badges */}
+                <div className="px-4 py-2 bg-card-bg/60 border-b border-card-border/40 flex items-center justify-between">
+                  <span
+                    className={`px-2 py-0.5 rounded text-[8px] font-extrabold uppercase border flex items-center gap-1 ${
+                      banner.isActive
+                        ? 'bg-green-600/10 border-green-500/20 text-green-500'
+                        : 'bg-red-500/10 border-red-500/25 text-red-500'
+                    }`}
+                  >
+                    {banner.isActive ? (
+                      <>
+                        <Eye className="h-3 w-3" /> Visible
+                      </>
+                    ) : (
+                      <>
+                        <EyeOff className="h-3 w-3" /> Hidden
+                      </>
+                    )}
+                  </span>
+                  <span className="px-2 py-0.5 rounded text-[8px] font-extrabold uppercase border bg-accent/10 border-accent/20 text-accent flex items-center gap-1">
+                    <ArrowUpDown className="h-3 w-3" /> Sort: {banner.sortOrder}
+                  </span>
                 </div>
 
                 {/* Details */}
@@ -247,7 +280,7 @@ export default function BannersAdminPage() {
       {isCreateOpen && (
         <div className="fixed inset-0 z-50 overflow-hidden flex items-center justify-center px-4">
           <div className="absolute inset-0 bg-black/75 backdrop-blur-xs" onClick={() => setIsCreateOpen(false)} />
-          <div className="relative w-full max-w-lg bg-card-bg border border-card-border rounded-lg shadow-2xl overflow-hidden text-white animate-fade-in">
+          <div className="relative w-full max-w-lg bg-card-bg border border-card-border rounded-lg shadow-2xl overflow-hidden text-white animate-fade-in max-h-[90vh] flex flex-col">
             <div className="px-6 py-4 border-b border-card-border flex items-center justify-between">
               <h2 className="text-sm font-bold uppercase tracking-wider text-accent">Create Carousel Banner</h2>
               <button onClick={() => setIsCreateOpen(false)} className="text-muted-text hover:text-white">
@@ -255,7 +288,7 @@ export default function BannersAdminPage() {
               </button>
             </div>
 
-            <form onSubmit={handleCreateSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleCreateSubmit} className="p-6 space-y-4 overflow-y-auto">
               <div className="space-y-1">
                 <label className="text-xs uppercase tracking-widest text-muted-text font-bold">Banner Title (Optional)</label>
                 <input
@@ -304,7 +337,7 @@ export default function BannersAdminPage() {
 
               <div className="space-y-2 border-t border-card-border/60 pt-4">
                 <label className="text-xs uppercase tracking-widest text-muted-text font-bold flex items-center gap-1.5">
-                  <Upload className="h-4 w-4 text-accent" /> Banner Image (Required) *
+                  <Upload className="h-4 w-4 text-accent" /> Desktop Banner Image (Required) *
                 </label>
                 <input
                   type="file"
@@ -313,6 +346,21 @@ export default function BannersAdminPage() {
                   onChange={(e) => setSelectedFile(e.target.files?.[0] || null)}
                   className="w-full text-xs text-muted-text file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:uppercase file:bg-accent file:text-black file:cursor-pointer"
                 />
+              </div>
+
+              <div className="space-y-2 border-t border-card-border/60 pt-4">
+                <label className="text-xs uppercase tracking-widest text-muted-text font-bold flex items-center gap-1.5">
+                  <Upload className="h-4 w-4 text-accent" /> Mobile Banner Image (Optional)
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setSelectedMobileFile(e.target.files?.[0] || null)}
+                  className="w-full text-xs text-muted-text file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:uppercase file:bg-card-border file:text-white file:cursor-pointer"
+                />
+                <p className="text-[9px] text-muted-text uppercase font-semibold">
+                  If left empty, desktop image will be shown on mobile screens.
+                </p>
               </div>
 
               <div className="pt-4">
@@ -333,7 +381,7 @@ export default function BannersAdminPage() {
       {isEditOpen && selectedBanner && (
         <div className="fixed inset-0 z-50 overflow-hidden flex items-center justify-center px-4">
           <div className="absolute inset-0 bg-black/75 backdrop-blur-xs" onClick={() => setIsEditOpen(false)} />
-          <div className="relative w-full max-w-lg bg-card-bg border border-card-border rounded-lg shadow-2xl overflow-hidden text-white animate-fade-in">
+          <div className="relative w-full max-w-lg bg-card-bg border border-card-border rounded-lg shadow-2xl overflow-hidden text-white animate-fade-in max-h-[90vh] flex flex-col">
             <div className="px-6 py-4 border-b border-card-border flex items-center justify-between">
               <h2 className="text-sm font-bold uppercase tracking-wider text-accent">Edit Carousel Banner</h2>
               <button onClick={() => setIsEditOpen(false)} className="text-muted-text hover:text-white">
@@ -341,7 +389,7 @@ export default function BannersAdminPage() {
               </button>
             </div>
 
-            <form onSubmit={handleEditSubmit} className="p-6 space-y-4">
+            <form onSubmit={handleEditSubmit} className="p-6 space-y-4 overflow-y-auto">
               <div className="space-y-1">
                 <label className="text-xs uppercase tracking-widest text-muted-text font-bold">Banner Title (Optional)</label>
                 <input
@@ -388,7 +436,7 @@ export default function BannersAdminPage() {
 
               <div className="space-y-2 border-t border-card-border/60 pt-4">
                 <label className="text-xs uppercase tracking-widest text-muted-text font-bold flex items-center gap-1.5">
-                  <Upload className="h-4 w-4 text-accent" /> Replace Image (Optional)
+                  <Upload className="h-4 w-4 text-accent" /> Replace Desktop Image (Optional)
                 </label>
                 <input
                   type="file"
@@ -397,7 +445,22 @@ export default function BannersAdminPage() {
                   className="w-full text-xs text-muted-text file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:uppercase file:bg-accent file:text-black file:cursor-pointer"
                 />
                 <p className="text-[9px] text-muted-text uppercase font-semibold">
-                  Leave empty to keep the existing banner image.
+                  Leave empty to keep existing desktop banner image.
+                </p>
+              </div>
+
+              <div className="space-y-2 border-t border-card-border/60 pt-4">
+                <label className="text-xs uppercase tracking-widest text-muted-text font-bold flex items-center gap-1.5">
+                  <Upload className="h-4 w-4 text-accent" /> Replace Mobile Image (Optional)
+                </label>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={(e) => setSelectedMobileFile(e.target.files?.[0] || null)}
+                  className="w-full text-xs text-muted-text file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:uppercase file:bg-card-border file:text-white file:cursor-pointer"
+                />
+                <p className="text-[9px] text-muted-text uppercase font-semibold">
+                  Leave empty to keep existing mobile banner image.
                 </p>
               </div>
 

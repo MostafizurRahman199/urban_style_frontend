@@ -71,11 +71,20 @@ export default function BannerCarousel() {
             index === currentSlide ? 'opacity-100 z-10' : 'opacity-0 z-0'
           }`}
         >
-          {/* Background image */}
+          {/* Desktop Background image */}
           <div
-            className="absolute inset-0 bg-cover bg-center transition-transform duration-[10000ms] ease-out scale-105"
+            className="hidden sm:block absolute inset-0 bg-cover bg-center transition-transform duration-[10000ms] ease-out scale-105"
             style={{
               backgroundImage: `url(${banner.imageUrl})`,
+              transform: index === currentSlide ? 'scale(1)' : 'scale(1.05)',
+            }}
+          />
+
+          {/* Mobile Background image (Fallback to desktop banner if mobile banner is missing) */}
+          <div
+            className="block sm:hidden absolute inset-0 bg-cover bg-center transition-transform duration-[10000ms] ease-out scale-105"
+            style={{
+              backgroundImage: `url(${banner.mobileImageUrl || banner.imageUrl})`,
               transform: index === currentSlide ? 'scale(1)' : 'scale(1.05)',
             }}
           />

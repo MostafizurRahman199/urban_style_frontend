@@ -360,7 +360,7 @@ export default function ProductDetailPage({ params }: PageProps) {
         </div>
 
         {/* Full-Width Product Description Section at Bottom */}
-        <div className="mt-12 bg-card-bg border border-card-border rounded-lg p-6 sm:p-8 space-y-4">
+        <div className="mt-12 bg-card-bg  rounded-lg p-6 sm:p-8 space-y-4">
           <h3 className="text-sm font-black uppercase tracking-widest text-accent pb-3 border-b border-card-border">
             Product Specifications & Details
           </h3>

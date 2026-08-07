@@ -16,14 +16,21 @@ import Link from 'next/link';
 interface SliderContainerProps {
   children: React.ReactNode;
   itemCount: number;
+  autoPlay?: boolean;
+  autoPlayInterval?: number;
 }
 
-function SliderContainer({ children, itemCount }: SliderContainerProps) {
+function SliderContainer({
+  children,
+  itemCount,
+  autoPlay = false,
+  autoPlayInterval = 3500,
+}: SliderContainerProps) {
   const [emblaRef, emblaApi] = useEmblaCarousel({
     align: 'start',
     loop: true,
     slidesToScroll: 1, // scroll exactly one card at a time
-    containScroll: 'trimSnaps'
+    containScroll: 'trimSnaps',
   });
 
   const scrollPrev = useCallback(() => {
@@ -34,6 +41,25 @@ function SliderContainer({ children, itemCount }: SliderContainerProps) {
     if (emblaApi) emblaApi.scrollNext();
   }, [emblaApi]);
 
+  useEffect(() => {
+    if (!autoPlay || !emblaApi) return;
+
+    const interval = setInterval(() => {
+      emblaApi.scrollNext();
+    }, autoPlayInterval);
+
+    return () => clearInterval(interval);
+  }, [emblaApi, autoPlay, autoPlayInterval]);
+
+  // Ensure enough items for smooth infinite circular rotation across all sliders
+  const childrenArray = React.Children.toArray(children);
+  let displayChildren = childrenArray;
+
+  if (childrenArray.length > 0 && childrenArray.length < 8) {
+    const repeatCount = Math.ceil(8 / childrenArray.length);
+    displayChildren = Array(repeatCount).fill(childrenArray).flat();
+  }
+
   return (
     <div className="relative group/slider">
       {/* Scrollable Container (Embla Viewport) */}
@@ -42,9 +68,9 @@ function SliderContainer({ children, itemCount }: SliderContainerProps) {
         className="overflow-hidden py-4 -my-4"
       >
         {/* Embla Container */}
-        <div className="flex -ml-6">
-          {React.Children.map(children, (child) => (
-            <div className="pl-6 flex-[0_0_auto]">
+        <div className="flex -ml-3 sm:-ml-6">
+          {displayChildren.map((child, idx) => (
+            <div key={idx} className="pl-3 sm:pl-6 flex-[0_0_auto]">
               {child}
             </div>
           ))}
@@ -54,17 +80,17 @@ function SliderContainer({ children, itemCount }: SliderContainerProps) {
       {/* Slide Navigation Buttons */}
       <button
         onClick={scrollPrev}
-        className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-30 p-2.5 rounded-full bg-black/80 border border-card-border hover:border-accent text-white hover:text-accent opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 shadow-lg"
+        className="absolute left-[-15px] sm:left-[-20px] top-1/2 -translate-y-1/2 z-30 p-2 sm:p-2.5 rounded-full bg-black/80 border border-card-border hover:border-accent text-white hover:text-accent opacity-0 sm:opacity-100 group-hover/slider:opacity-100 transition-opacity duration-300 shadow-lg"
         title="Previous"
       >
-        <ChevronLeft className="h-5 w-5" />
+        <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
       </button>
       <button
         onClick={scrollNext}
-        className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-30 p-2.5 rounded-full bg-black/80 border border-card-border hover:border-accent text-white hover:text-accent opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 shadow-lg"
+        className="absolute right-[-15px] sm:right-[-20px] top-1/2 -translate-y-1/2 z-30 p-2 sm:p-2.5 rounded-full bg-black/80 border border-card-border hover:border-accent text-white hover:text-accent opacity-0 sm:opacity-100 group-hover/slider:opacity-100 transition-opacity duration-300 shadow-lg"
         title="Next"
       >
-        <ChevronRight className="h-5 w-5" />
+        <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5" />
       </button>
     </div>
   );
@@ -89,12 +115,12 @@ export default function HomePage() {
       {/* Hero Banner Carousel */}
       <BannerCarousel />
 
-      <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+      <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 space-y-12 sm:space-y-16">
         {/* Shop by Category Section (Slider) */}
         {categories && categories.length > 0 && (
-          <section className="space-y-6">
+          <section className="space-y-4 sm:space-y-6">
             <div className="flex items-center justify-between">
-              <h2 className="text-xl sm:text-2xl font-black uppercase tracking-wider">
+              <h2 className="text-lg sm:text-2xl font-black uppercase tracking-wider">
                 Shop By <span className="text-accent">Category</span>
               </h2>
               <div className="h-px bg-card-border flex-grow ml-6 hidden sm:block" />
@@ -105,13 +131,13 @@ export default function HomePage() {
                 <Link
                   key={cat.id}
                   href={`/all-products?category=${cat.id}`}
-                  className="min-w-[150px] sm:min-w-[200px] w-[200px] flex-shrink-0 snap-start group relative flex flex-col items-center justify-center p-6 border border-card-border hover:border-accent/50 bg-card-bg/60 hover:bg-card-bg/95 rounded-lg transition-all duration-300 overflow-hidden shadow-sm hover:shadow-[0_0_20px_rgba(212,175,55,0.15)] hover:-translate-y-1"
+                  className="min-w-[100px] sm:min-w-[170px] w-[100px] sm:w-[170px] flex-shrink-0 snap-start group relative flex flex-col items-center justify-center p-3 sm:p-5 border border-card-border hover:border-accent/50 bg-card-bg/60 hover:bg-card-bg/95 rounded-lg transition-all duration-300 overflow-hidden shadow-sm hover:shadow-[0_0_20px_rgba(212,175,55,0.15)] hover:-translate-y-1"
                 >
                   {/* Glowing background animation */}
                   <div className="absolute inset-0 bg-radial-gradient from-accent/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
                   {/* Circular Icon Container */}
-                  <div className="relative w-16 h-16 rounded-full flex items-center justify-center bg-black/40 border border-card-border group-hover:border-accent/40 group-hover:bg-black/60 transition-all duration-300 overflow-hidden mb-4 z-10">
+                  <div className="relative w-10 h-10 sm:w-14 sm:h-14 rounded-full flex items-center justify-center bg-black/40 border border-card-border group-hover:border-accent/40 group-hover:bg-black/60 transition-all duration-300 overflow-hidden mb-2 sm:mb-3 z-10">
                     {cat.iconUrl ? (
                       // eslint-disable-next-line @next/next/no-img-element
                       <img
@@ -120,19 +146,19 @@ export default function HomePage() {
                         className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
                       />
                     ) : (
-                      <span className="text-xl font-black uppercase tracking-wider text-muted-text group-hover:text-accent transition-colors">
+                      <span className="text-sm sm:text-lg font-black uppercase tracking-wider text-muted-text group-hover:text-accent transition-colors">
                         {cat.name[0]}
                       </span>
                     )}
                   </div>
 
                   {/* Category Title */}
-                  <span className="relative z-10 font-bold uppercase tracking-widest text-xs text-muted-text group-hover:text-white transition-colors text-center truncate w-full">
+                  <span className="relative z-10 font-bold uppercase tracking-widest text-[10px] sm:text-xs text-muted-text group-hover:text-white transition-colors text-center truncate w-full">
                     {cat.name}
                   </span>
 
                   {/* Tiny arrow hint */}
-                  <span className="text-[9px] font-black uppercase tracking-widest text-accent opacity-0 group-hover:opacity-100 mt-2 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
+                  <span className="text-[8px] sm:text-[9px] font-black uppercase tracking-widest text-accent opacity-0 group-hover:opacity-100 mt-1 sm:mt-2 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
                     Explore &rarr;
                   </span>
                 </Link>
@@ -154,9 +180,9 @@ export default function HomePage() {
               <div className="h-px bg-card-border flex-grow ml-6 hidden sm:block" />
             </div>
 
-            <SliderContainer itemCount={popularProductsData.data.length}>
+            <SliderContainer itemCount={popularProductsData.data.length} autoPlay={true}>
               {popularProductsData.data.map((product: any) => (
-                <div key={product.id} className="min-w-[250px] sm:min-w-[280px] w-[280px] flex-shrink-0 snap-start">
+                <div key={product.id} className="min-w-[190px] sm:min-w-[280px] w-[190px] sm:w-[280px] flex-shrink-0 snap-start">
                   <ProductCard product={product} />
                 </div>
               ))}
@@ -233,7 +259,7 @@ function CategoryProductSection({ category }: CategoryProductSectionProps) {
 
       <SliderContainer itemCount={productsData.data.length}>
         {productsData.data.map((product: any) => (
-          <div key={product.id} className="min-w-[250px] sm:min-w-[280px] w-[280px] flex-shrink-0 snap-start">
+          <div key={product.id} className="min-w-[190px] sm:min-w-[280px] w-[190px] sm:w-[280px] flex-shrink-0 snap-start">
             <ProductCard product={product} />
           </div>
         ))}
