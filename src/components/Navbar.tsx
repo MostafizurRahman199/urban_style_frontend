@@ -39,13 +39,16 @@ export default function Navbar() {
     };
     
     const handleOpenCart = () => setCartOpen(true);
+    const handleOpenContact = () => setContactOpen(true);
     
     window.addEventListener('scroll', handleScroll);
     window.addEventListener('open-cart', handleOpenCart);
+    window.addEventListener('open-contact', handleOpenContact);
     
     return () => {
       window.removeEventListener('scroll', handleScroll);
       window.removeEventListener('open-cart', handleOpenCart);
+      window.removeEventListener('open-contact', handleOpenContact);
     };
   }, []);
 

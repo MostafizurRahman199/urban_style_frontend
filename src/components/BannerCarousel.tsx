@@ -107,7 +107,7 @@ export default function BannerCarousel() {
               )}
               <div className="pt-2">
                 <a
-                  href="#products"
+                  href="/all-products"
                   className="inline-flex items-center gap-2 px-6 py-3 bg-accent text-black font-bold uppercase tracking-wider text-sm hover:bg-accent-hover transition-colors rounded"
                 >
                   <ShoppingBag className="h-4 w-4" />

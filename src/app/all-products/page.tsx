@@ -8,7 +8,7 @@ import {
   useGetProductsQuery,
   useGetCategoriesQuery,
 } from '@/redux/services/api';
-import { Search, ShoppingBag, Eye, SlidersHorizontal, ChevronLeft, ChevronRight, X } from 'lucide-react';
+import { Search, ShoppingBag, Eye, SlidersHorizontal, ChevronLeft, ChevronRight, X, RotateCcw } from 'lucide-react';
 import Link from 'next/link';
 
 function AllProductsContent() {
@@ -22,6 +22,10 @@ function AllProductsContent() {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [debouncedSearch, setDebouncedSearch] = useState<string>('');
+  const [minPriceInput, setMinPriceInput] = useState<string>('');
+  const [maxPriceInput, setMaxPriceInput] = useState<string>('');
+  const [appliedMinPrice, setAppliedMinPrice] = useState<string>('');
+  const [appliedMaxPrice, setAppliedMaxPrice] = useState<string>('');
   const [page, setPage] = useState<number>(1);
   const [showMobileFilters, setShowMobileFilters] = useState<boolean>(false);
   const limit = 9;
@@ -34,11 +38,13 @@ function AllProductsContent() {
 
   // Queries
   const { data: categories } = useGetCategoriesQuery(undefined);
-  const { data: productsData, isLoading: productsLoading } = useGetProductsQuery({
+  const { data: productsData, isLoading: productsLoading, isFetching: productsFetching } = useGetProductsQuery({
     page,
     limit,
     ...(selectedCategory && { categoryId: selectedCategory }),
     ...(debouncedSearch && { search: debouncedSearch }),
+    ...(appliedMinPrice && !isNaN(parseFloat(appliedMinPrice)) && { minPrice: parseFloat(appliedMinPrice) }),
+    ...(appliedMaxPrice && !isNaN(parseFloat(appliedMaxPrice)) && { maxPrice: parseFloat(appliedMaxPrice) }),
     isActive: 'true',
   });
 
@@ -60,6 +66,24 @@ function AllProductsContent() {
   const triggerSearch = (e: React.FormEvent) => {
     e.preventDefault();
     setDebouncedSearch(searchTerm);
+    setPage(1);
+  };
+
+  const handleApplyPriceFilter = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    setAppliedMinPrice(minPriceInput);
+    setAppliedMaxPrice(maxPriceInput);
+    setPage(1);
+  };
+
+  const handleClearAllFilters = () => {
+    handleCategorySelect('');
+    setSearchTerm('');
+    setDebouncedSearch('');
+    setMinPriceInput('');
+    setMaxPriceInput('');
+    setAppliedMinPrice('');
+    setAppliedMaxPrice('');
     setPage(1);
   };
 
@@ -96,31 +120,27 @@ function AllProductsContent() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left Side Filters - Desktop */}
-        <aside className="hidden lg:block lg:col-span-3 bg-card-bg border border-card-border p-6 rounded-lg space-y-6">
-          <div className="flex items-center justify-between pb-3 border-b border-card-border/50">
+        <aside className="hidden lg:block lg:col-span-3 bg-card-bg border border-card-border p-6 rounded-lg space-y-6 sticky top-24 max-h-[calc(100vh-7rem)] overflow-hidden flex flex-col">
+          <div className="flex items-center justify-between pb-3 border-b border-card-border/50 flex-shrink-0">
             <h3 className="text-xs uppercase font-extrabold tracking-widest text-accent flex items-center gap-1.5">
               <SlidersHorizontal className="h-4 w-4" /> Filters
             </h3>
-            {(selectedCategory || debouncedSearch) && (
+            {(selectedCategory || debouncedSearch || appliedMinPrice || appliedMaxPrice || minPriceInput || maxPriceInput) && (
               <button
-                onClick={() => {
-                  handleCategorySelect('');
-                  setSearchTerm('');
-                  setDebouncedSearch('');
-                }}
-                className="text-[9px] uppercase font-bold text-red-500 hover:text-red-400 transition-colors"
+                onClick={handleClearAllFilters}
+                className="px-2.5 py-1 text-[10px] font-extrabold uppercase tracking-wider text-red-400 bg-red-500/10 border border-red-500/30 hover:bg-red-500 hover:text-white rounded-full transition-all duration-200 flex items-center gap-1.5 shadow-xs active:scale-95 cursor-pointer"
               >
-                Clear All
+                <RotateCcw className="h-3 w-3" /> Clear All
               </button>
             )}
           </div>
 
           {/* Categories List */}
-          <div className="space-y-3">
-            <span className="text-[10px] uppercase tracking-widest text-muted-text font-bold block">
+          <div className="space-y-3 flex-1 flex flex-col min-h-0">
+            <span className="text-[10px] uppercase tracking-widest text-muted-text font-bold block flex-shrink-0">
               Categories
             </span>
-            <div className="flex flex-col gap-1.5">
+            <div className="flex flex-col gap-1.5 overflow-y-auto scrollbar-thin pr-1 flex-1">
               <button
                 onClick={() => handleCategorySelect('')}
                 className={`w-full text-left px-3 py-2 text-xs font-bold uppercase tracking-wider rounded transition-colors ${
@@ -150,6 +170,39 @@ function AllProductsContent() {
               ))}
             </div>
           </div>
+
+          {/* Price Range Filter */}
+          <div className="space-y-3 pt-4 border-t border-card-border/50 flex-shrink-0">
+            <span className="text-[10px] uppercase tracking-widest text-muted-text font-bold block">
+              Price Range (৳)
+            </span>
+            <form onSubmit={handleApplyPriceFilter} className="space-y-2">
+              <div className="grid grid-cols-2 gap-2">
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="Min ৳"
+                  value={minPriceInput}
+                  onChange={(e) => setMinPriceInput(e.target.value)}
+                  className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-3 py-1.5 rounded text-xs outline-none transition-colors placeholder:text-muted-text"
+                />
+                <input
+                  type="number"
+                  min="0"
+                  placeholder="Max ৳"
+                  value={maxPriceInput}
+                  onChange={(e) => setMaxPriceInput(e.target.value)}
+                  className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-3 py-1.5 rounded text-xs outline-none transition-colors placeholder:text-muted-text"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-1.5 bg-accent text-black font-bold uppercase tracking-wider text-[11px] rounded hover:bg-accent-hover transition-colors"
+              >
+                Apply Price
+              </button>
+            </form>
+          </div>
         </aside>
 
         {/* Mobile Filters Toggle & Drawer */}
@@ -160,9 +213,9 @@ function AllProductsContent() {
           >
             <SlidersHorizontal className="h-4 w-4" /> Show Filters
           </button>
-          {selectedCategory && (
+          {(selectedCategory || appliedMinPrice || appliedMaxPrice) && (
             <span className="text-[10px] bg-accent/25 text-accent px-2 py-0.5 rounded font-bold uppercase">
-              {categories?.find((c: any) => c.id === selectedCategory)?.name || 'Filtered'}
+              Filtered
             </span>
           )}
         </div>
@@ -185,7 +238,7 @@ function AllProductsContent() {
                   <span className="text-[10px] uppercase tracking-widest text-muted-text font-bold block">
                     Categories
                   </span>
-                  <div className="flex flex-col gap-1.5">
+                  <div className="flex flex-col gap-1.5 max-h-[50vh] overflow-y-auto scrollbar-thin pr-1">
                     <button
                       onClick={() => {
                         handleCategorySelect('');
@@ -221,19 +274,56 @@ function AllProductsContent() {
                     ))}
                   </div>
                 </div>
+
+                {/* Mobile Price Range Filter */}
+                <div className="space-y-3 pt-4 border-t border-card-border">
+                  <span className="text-[10px] uppercase tracking-widest text-muted-text font-bold block">
+                    Price Range (৳)
+                  </span>
+                  <form
+                    onSubmit={(e) => {
+                      handleApplyPriceFilter(e);
+                      setShowMobileFilters(false);
+                    }}
+                    className="space-y-2"
+                  >
+                    <div className="grid grid-cols-2 gap-2">
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="Min ৳"
+                        value={minPriceInput}
+                        onChange={(e) => setMinPriceInput(e.target.value)}
+                        className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-3 py-2 rounded text-xs outline-none transition-colors placeholder:text-muted-text"
+                      />
+                      <input
+                        type="number"
+                        min="0"
+                        placeholder="Max ৳"
+                        value={maxPriceInput}
+                        onChange={(e) => setMaxPriceInput(e.target.value)}
+                        className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-3 py-2 rounded text-xs outline-none transition-colors placeholder:text-muted-text"
+                      />
+                    </div>
+                    <button
+                      type="submit"
+                      className="w-full py-2 bg-accent text-black font-bold uppercase tracking-wider text-xs rounded hover:bg-accent-hover transition-colors"
+                    >
+                      Apply Price Filter
+                    </button>
+                  </form>
+                </div>
               </div>
 
-              {(selectedCategory || debouncedSearch) && (
+              {(selectedCategory || debouncedSearch || appliedMinPrice || appliedMaxPrice || minPriceInput || maxPriceInput) && (
                 <button
                   onClick={() => {
-                    handleCategorySelect('');
-                    setSearchTerm('');
-                    setDebouncedSearch('');
+                    handleClearAllFilters();
                     setShowMobileFilters(false);
                   }}
-                  className="w-full py-2.5 border border-red-500 text-red-500 hover:bg-red-500 hover:text-white rounded text-xs font-extrabold uppercase tracking-widest transition-colors"
+                  className="w-full py-3 bg-red-500/15 border border-red-500/40 text-red-400 hover:bg-red-500 hover:text-white rounded-lg text-xs font-black uppercase tracking-widest transition-all duration-200 flex items-center justify-center gap-2 mt-4 shadow-sm active:scale-95 cursor-pointer"
                 >
-                  Clear All Filters
+                  <RotateCcw className="h-3.5 w-3.5" /> Reset All Filters
                 </button>
               )}
             </div>
@@ -269,9 +359,15 @@ function AllProductsContent() {
             </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-                {productsData.data.map((product: any) => (
-                  <ProductCard key={product.id} product={product} />
+              <div className={`grid grid-cols-2 sm:grid-cols-3 gap-6 transition-all duration-300 ${productsFetching ? 'opacity-50 scale-[0.99] pointer-events-none' : 'opacity-100 scale-100'}`}>
+                {productsData.data.map((product: any, idx: number) => (
+                  <div
+                    key={product.id}
+                    className="animate-fade-in"
+                    style={{ animationDelay: `${idx * 0.05}s`, animationFillMode: 'both' }}
+                  >
+                    <ProductCard product={product} />
+                  </div>
                 ))}
               </div>
 

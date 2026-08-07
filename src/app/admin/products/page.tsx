@@ -391,7 +391,7 @@ export default function ProductsAdminPage() {
       </div>
 
       {/* Products Table List */}
-      <div className="bg-card-bg border border-card-border rounded-lg p-6">
+      <div className="bg-card-bg border border-card-border rounded-lg p-4 sm:p-6">
         {isLoading ? (
           <div className="space-y-4 py-10">
             <div className="h-10 bg-card-border animate-pulse rounded" />
@@ -405,28 +405,28 @@ export default function ProductsAdminPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
+            <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+              <table className="w-full text-left border-collapse text-xs min-w-[850px]">
                 <thead>
                   <tr className="border-b border-card-border text-muted-text uppercase tracking-widest font-bold">
-                    <th className="pb-3 w-16">Image</th>
-                    <th className="pb-3">Name</th>
-                    <th className="pb-3">Category</th>
-                    <th className="pb-3">Price</th>
-                    <th className="pb-3">Delivery</th>
-                    <th className="pb-3">Stock</th>
-                    <th className="pb-3 text-center">Popular</th>
-                    <th className="pb-3 text-center">Status</th>
-                    <th className="pb-3 text-right">Actions</th>
+                    <th className="py-3 px-2 w-16">Image</th>
+                    <th className="py-3 px-2">Name</th>
+                    <th className="py-3 px-2">Category</th>
+                    <th className="py-3 px-2">Price</th>
+                    <th className="py-3 px-2">Delivery</th>
+                    <th className="py-3 px-2">Stock</th>
+                    <th className="py-3 px-2 text-center">Popular</th>
+                    <th className="py-3 px-2 text-center">Status</th>
+                    <th className="py-3 px-2 text-right">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-card-border/40">
+                <tbody className="divide-y divide-card-border/40 font-sans">
                   {productsData.data.map((prod: any) => {
                     const firstImage = prod.images?.[0]?.url;
                     return (
                       <tr key={prod.id} className="hover:bg-black/20 transition-colors">
                         {/* Thumbnail */}
-                        <td className="py-4">
+                        <td className="py-4 px-2">
                           <div className="h-10 w-10 border border-card-border rounded overflow-hidden bg-black flex items-center justify-center flex-shrink-0">
                             {firstImage ? (
                               // eslint-disable-next-line @next/next/no-img-element
@@ -438,17 +438,17 @@ export default function ProductsAdminPage() {
                         </td>
 
                         {/* Name */}
-                        <td className="py-4 font-bold text-white max-w-xs truncate pr-4">
+                        <td className="py-4 px-2 font-bold text-white max-w-[180px] truncate">
                           {prod.name}
                         </td>
 
                         {/* Category */}
-                        <td className="py-4 text-accent font-bold uppercase">
+                        <td className="py-4 px-2 text-accent font-bold uppercase">
                           {prod.category?.name || 'N/A'}
                         </td>
 
                         {/* Price */}
-                        <td className="py-4 font-mono font-bold">
+                        <td className="py-4 px-2 font-mono font-bold">
                           {prod.discountPrice && Number(prod.discountPrice) > 0 && Number(prod.discountPrice) < Number(prod.price) ? (
                             <div className="flex flex-col">
                               <span className="text-accent">৳{Number(prod.discountPrice).toFixed(2)}</span>
@@ -462,12 +462,12 @@ export default function ProductsAdminPage() {
                         </td>
 
                         {/* Delivery Charge */}
-                        <td className="py-4 font-mono font-semibold text-muted-text">
+                        <td className="py-4 px-2 font-mono font-semibold text-muted-text">
                           ৳{Number(prod.deliveryCharge || 0).toFixed(2)}
                         </td>
 
                         {/* Stock */}
-                        <td className="py-4 font-mono">
+                        <td className="py-4 px-2 font-mono">
                           <span
                             className={
                               prod.quantity <= 0
@@ -482,7 +482,7 @@ export default function ProductsAdminPage() {
                         </td>
 
                         {/* Popular */}
-                        <td className="py-4 text-center">
+                        <td className="py-4 px-2 text-center">
                           {prod.isPopular ? (
                             <span className="inline-flex p-1 bg-accent/10 border border-accent/20 rounded text-accent">
                               <Star className="h-3 w-3 fill-accent" />
@@ -493,7 +493,7 @@ export default function ProductsAdminPage() {
                         </td>
 
                         {/* Active Status */}
-                        <td className="py-4 text-center">
+                        <td className="py-4 px-2 text-center">
                           <span
                             className={`px-2 py-0.5 rounded text-[10px] font-extrabold uppercase border ${
                               prod.isActive
@@ -506,7 +506,7 @@ export default function ProductsAdminPage() {
                         </td>
 
                         {/* Actions */}
-                        <td className="py-4 text-right">
+                        <td className="py-4 px-2 text-right">
                           <div className="flex items-center justify-end gap-2">
                             <button
                               onClick={() => openEdit(prod)}
