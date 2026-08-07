@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useGetOrdersQuery } from '@/redux/services/api';
-import { Eye, ShoppingCart, User, Clock, CheckCircle2, XCircle, Ban, Truck, CreditCard, ChevronDown } from 'lucide-react';
+import { Eye, ShoppingCart, User, Clock, CheckCircle2, XCircle, Ban, Truck, CreditCard, ChevronDown, Search } from 'lucide-react';
 import Link from 'next/link';
 
 interface CustomSelectProps {
@@ -73,14 +73,25 @@ const CustomSelect: React.FC<CustomSelectProps> = ({ value, onChange, options, p
 export default function OrdersAdminPage() {
   const [orderStatus, setOrderStatus] = useState('');
   const [paymentStatus, setPaymentStatus] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+  const [debouncedSearch, setDebouncedSearch] = useState('');
   const [page, setPage] = useState(1);
   const limit = 10;
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearch(searchInput);
+      setPage(1);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [searchInput]);
 
   const { data: ordersData, isLoading, error } = useGetOrdersQuery({
     page,
     limit,
     ...(orderStatus && { orderStatus }),
     ...(paymentStatus && { paymentStatus }),
+    ...(debouncedSearch && { search: debouncedSearch }),
   });
 
   const getOrderStatusStyle = (status: string) => {
@@ -130,7 +141,23 @@ export default function OrdersAdminPage() {
       </div>
 
       {/* Filters Row */}
-      <div className="flex flex-col sm:flex-row gap-4 bg-card-bg border border-card-border p-5 rounded-lg shadow-sm">
+      <div className="flex flex-col md:flex-row gap-4 bg-card-bg border border-card-border p-5 rounded-lg shadow-sm">
+        <div className="flex-[2] min-w-0 space-y-1.5">
+          <label className="text-[10px] uppercase font-bold tracking-widest text-muted-text flex items-center gap-1.5">
+            <Search className="h-3 w-3 text-accent" /> Search Orders
+          </label>
+          <div className="relative">
+            <input
+              type="text"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+              placeholder="Search by Order ID, Name, or Phone..."
+              className="w-full bg-input-bg border border-input-border focus:border-accent text-white pl-10 pr-4 py-2.5 rounded-md text-xs outline-none transition-colors"
+            />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-text" />
+          </div>
+        </div>
+
         <div className="flex-1 min-w-0 space-y-1.5">
           <label className="text-[10px] uppercase font-bold tracking-widest text-muted-text flex items-center gap-1.5">
             <Truck className="h-3 w-3 text-accent" /> Fulfillment Status

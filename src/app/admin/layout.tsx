@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { useGetMeQuery } from '@/redux/services/api';
 import { logout, setAdminUser } from '@/redux/slices/authSlice';
-import { LayoutDashboard, FolderKanban, ShoppingBag, Image, ShoppingCart, LogOut, ExternalLink, ChevronRight, Mail } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, ShoppingBag, Image, ShoppingCart, LogOut, ExternalLink, ChevronRight, Mail, Menu, X } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -14,6 +14,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const dispatch = useDispatch();
   const token = useSelector((state: RootState) => state.auth.token);
+  const [isSidebarOpen, setIsSidebarOpen] = React.useState(false);
+
+  // Close sidebar on route change
+  useEffect(() => {
+    setIsSidebarOpen(false);
+  }, [pathname]);
 
   // If on login, skip layout and render children directly
   const isLoginPage = pathname === '/admin/login';
@@ -76,9 +82,36 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   };
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col md:flex-row">
+    <div className="min-h-screen bg-black text-white flex flex-col md:flex-row print:bg-white print:text-black print:block relative">
+      {/* Mobile Header (Hidden on Desktop) */}
+      <div className="md:hidden flex items-center justify-between p-4 border-b border-card-border bg-sidebar-bg print:hidden">
+        <Link href="/" className="flex flex-col">
+          <span className="text-lg font-black tracking-widest text-accent font-sans">
+            URBAN STYLE
+          </span>
+        </Link>
+        <button
+          onClick={() => setIsSidebarOpen(true)}
+          className="p-2 text-white hover:text-accent transition-colors"
+        >
+          <Menu className="h-6 w-6" />
+        </button>
+      </div>
+
+      {/* Backdrop Overlay for Mobile */}
+      {isSidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/60 z-40 md:hidden print:hidden backdrop-blur-sm"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar Navigation */}
-      <aside className="w-full md:w-64 bg-sidebar-bg border-r border-card-border flex flex-col flex-shrink-0">
+      <aside
+        className={`fixed md:static inset-y-0 left-0 z-50 w-64 bg-sidebar-bg border-r border-card-border flex flex-col flex-shrink-0 print:hidden transition-transform duration-300 ease-in-out ${
+          isSidebarOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'
+        }`}
+      >
         {/* Brand Header */}
         <div className="p-6 border-b border-card-border flex items-center justify-between">
           <Link href="/" className="flex flex-col">
@@ -89,6 +122,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               Admin Dashboard
             </span>
           </Link>
+          <button
+            onClick={() => setIsSidebarOpen(false)}
+            className="md:hidden p-1 text-muted-text hover:text-white transition-colors"
+          >
+            <X className="h-5 w-5" />
+          </button>
         </div>
 
         {/* User Status */}
@@ -144,7 +183,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main Admin Page Content */}
-      <main className="flex-grow overflow-y-auto p-6 sm:p-10 max-w-7xl mx-auto w-full">
+      <main className="flex-grow overflow-y-auto p-6 sm:p-10 max-w-7xl mx-auto w-full print:p-0 print:m-0 print:overflow-visible">
         {children}
       </main>
     </div>

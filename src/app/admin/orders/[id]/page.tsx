@@ -6,7 +6,7 @@ import {
   useUpdateOrderStatusMutation,
   useUpdateOrderPaymentMutation,
 } from '@/redux/services/api';
-import { ArrowLeft, User, Phone, MapPin, MessageSquare, CreditCard, ShoppingBag, Calendar, AlertCircle } from 'lucide-react';
+import { ArrowLeft, User, Phone, MapPin, MessageSquare, CreditCard, ShoppingBag, Calendar, AlertCircle, Download } from 'lucide-react';
 import Link from 'next/link';
 
 interface PageProps {
@@ -80,17 +80,17 @@ export default function OrderDetailsPage({ params }: PageProps) {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 print:bg-white print:text-black print:p-8 print:m-0">
       {/* Back to list */}
       <Link
         href="/admin/orders"
-        className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-muted-text hover:text-white transition-colors"
+        className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-muted-text hover:text-white transition-colors print:hidden"
       >
         <ArrowLeft className="h-4 w-4" /> Back to Orders List
       </Link>
 
       {/* Header Info */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-card-border">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-card-border print:hidden">
         <div>
           <h1 className="text-xl sm:text-2xl font-black uppercase tracking-wider flex items-center gap-3">
             Order Detail <span className="text-accent text-xs font-mono font-normal">({order.id})</span>
@@ -99,12 +99,27 @@ export default function OrderDetailsPage({ params }: PageProps) {
             Registered: {new Date(order.createdAt).toLocaleString()}
           </p>
         </div>
+        <button
+          onClick={() => window.print()}
+          className="flex items-center gap-2 px-4 py-2 bg-accent text-black font-bold uppercase tracking-wider text-xs rounded hover:bg-accent-hover transition-colors shadow-sm"
+        >
+          <Download className="h-4 w-4" /> Download Invoice
+        </button>
+      </div>
+
+      {/* Print-only Invoice Header */}
+      <div className="hidden print:block mb-8">
+        <h1 className="text-2xl font-black uppercase mb-2">URBAN STYLE - Invoice</h1>
+        <div className="text-sm">
+          <p><strong>Order ID:</strong> {order.id}</p>
+          <p><strong>Date:</strong> {new Date(order.createdAt).toLocaleString()}</p>
+        </div>
       </div>
 
       {/* Alert Banner */}
       {notification && (
         <div
-          className={`border text-sm rounded p-4 flex items-center gap-2 animate-fade-in ${
+          className={`border text-sm rounded p-4 flex items-center gap-2 animate-fade-in print:hidden ${
             notification.type === 'success'
               ? 'bg-green-500/10 border-green-500/30 text-green-500'
               : 'bg-red-500/10 border-red-500/30 text-red-500'
@@ -116,7 +131,7 @@ export default function OrderDetailsPage({ params }: PageProps) {
       )}
 
       {/* Status update controls */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-card-bg border border-card-border p-6 rounded-lg">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-card-bg border border-card-border p-6 rounded-lg print:hidden">
         {/* Fulfillment status dropdown */}
         <div className="space-y-2">
           <label className="text-xs uppercase tracking-widest text-muted-text font-bold flex items-center gap-1.5">
@@ -156,10 +171,10 @@ export default function OrderDetailsPage({ params }: PageProps) {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start print:block">
         {/* Customer Receipt metadata */}
-        <div className="lg:col-span-5 bg-card-bg border border-card-border rounded-lg p-6 space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider border-b border-card-border pb-3">
+        <div className="lg:col-span-5 bg-card-bg border border-card-border rounded-lg p-6 space-y-4 print:border-none print:p-0 print:mb-8">
+          <h2 className="text-sm font-bold uppercase tracking-wider border-b border-card-border pb-3 print:text-black print:border-black">
             Customer details
           </h2>
 
@@ -201,8 +216,8 @@ export default function OrderDetailsPage({ params }: PageProps) {
         </div>
 
         {/* Order Items list */}
-        <div className="lg:col-span-7 bg-card-bg border border-card-border rounded-lg p-6 space-y-4">
-          <h2 className="text-sm font-bold uppercase tracking-wider border-b border-card-border pb-3">
+        <div className="lg:col-span-7 bg-card-bg border border-card-border rounded-lg p-6 space-y-4 print:border-none print:p-0">
+          <h2 className="text-sm font-bold uppercase tracking-wider border-b border-card-border pb-3 print:text-black print:border-black">
             Purchased Products
           </h2>
 
@@ -212,27 +227,30 @@ export default function OrderDetailsPage({ params }: PageProps) {
               return (
                 <div key={item.id} className="flex justify-between items-center py-4 gap-3">
                   <div className="flex items-center gap-3">
-                    <div className="h-12 w-12 border border-card-border bg-black rounded overflow-hidden flex-shrink-0 flex items-center justify-center">
+                    <div className="h-12 w-12 border border-card-border bg-black rounded overflow-hidden flex-shrink-0 flex items-center justify-center print:hidden">
                       <ShoppingBag className="h-6 w-6 text-muted-text/30" />
                     </div>
                     <div>
-                      <h4 className="text-xs font-bold text-white max-w-xs truncate">{item.product?.name || 'Item'}</h4>
-                      <span className="text-[10px] text-muted-text uppercase font-semibold">
-                        Price: ৳{Number(item.price).toFixed(2)} | Color: <span className="text-accent font-bold">{item.color}</span>
+                      <h4 className="text-xs font-bold text-white max-w-xs truncate print:text-black">{item.product?.name || 'Item'}</h4>
+                      <span className="text-[9px] font-mono text-muted-text uppercase block mb-1 print:text-gray-500">
+                        ID: {item.productId}
+                      </span>
+                      <span className="text-[10px] text-muted-text uppercase font-semibold print:text-gray-700">
+                        Price: ৳{Number(item.price).toFixed(2)} | Color: <span className="text-accent font-bold print:text-black">{item.color}</span>
                       </span>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-white font-mono text-xs block font-bold">Qty: {item.quantity}</span>
-                    <span className="text-accent font-mono text-xs font-bold">৳{subtotal.toFixed(2)}</span>
+                    <span className="text-white font-mono text-xs block font-bold print:text-black">Qty: {item.quantity}</span>
+                    <span className="text-accent font-mono text-xs font-bold print:text-black">৳{subtotal.toFixed(2)}</span>
                   </div>
                 </div>
               );
             })}
 
-            <div className="pt-4 flex justify-between items-center">
-              <span className="text-sm uppercase font-bold text-white">Grand Total</span>
-              <span className="text-base font-mono font-bold text-accent">৳{Number(order.totalAmount).toFixed(2)}</span>
+            <div className="pt-4 flex justify-between items-center print:border-t print:border-black">
+              <span className="text-sm uppercase font-bold text-white print:text-black">Grand Total</span>
+              <span className="text-base font-mono font-bold text-accent print:text-black">৳{Number(order.totalAmount).toFixed(2)}</span>
             </div>
           </div>
         </div>
