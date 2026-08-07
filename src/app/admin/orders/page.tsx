@@ -1,9 +1,74 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useGetOrdersQuery } from '@/redux/services/api';
-import { Eye, ShoppingCart, User, Clock, CheckCircle2, XCircle, Ban, Truck, CreditCard } from 'lucide-react';
+import { Eye, ShoppingCart, User, Clock, CheckCircle2, XCircle, Ban, Truck, CreditCard, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
+
+interface CustomSelectProps {
+  value: string;
+  onChange: (val: string) => void;
+  options: { value: string; label: string }[];
+  placeholder: string;
+}
+
+const CustomSelect: React.FC<CustomSelectProps> = ({ value, onChange, options, placeholder }) => {
+  const [isOpen, setIsOpen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const selectedOption = options.find((opt) => opt.value === value);
+
+  return (
+    <div className="relative w-full" ref={containerRef}>
+      <div
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full min-w-0 flex items-center justify-between bg-input-bg border border-input-border focus-within:border-accent focus-within:ring-1 focus-within:ring-accent/50 text-white px-4 py-2.5 rounded-md text-xs outline-none transition-all duration-200 cursor-pointer"
+      >
+        <span className="truncate">{selectedOption ? selectedOption.label : placeholder}</span>
+        <ChevronDown className={`h-4 w-4 text-muted-text transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} />
+      </div>
+      {isOpen && (
+        <div className="absolute z-50 w-full mt-1 bg-input-bg border border-input-border rounded-md shadow-lg max-h-60 overflow-y-auto overflow-x-hidden scrollbar-thin">
+          <div
+            onClick={() => {
+              onChange('');
+              setIsOpen(false);
+            }}
+            className="px-4 py-2.5 text-xs text-white hover:bg-accent hover:text-black cursor-pointer transition-colors truncate"
+          >
+            {placeholder}
+          </div>
+          {options.map((opt) => (
+            <div
+              key={opt.value}
+              onClick={() => {
+                onChange(opt.value);
+                setIsOpen(false);
+              }}
+              className={`px-4 py-2.5 text-xs cursor-pointer transition-colors truncate ${
+                value === opt.value
+                  ? 'bg-accent/20 text-accent font-bold'
+                  : 'text-white hover:bg-accent hover:text-black'
+              }`}
+            >
+              {opt.label}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function OrdersAdminPage() {
   const [orderStatus, setOrderStatus] = useState('');
@@ -65,47 +130,47 @@ export default function OrdersAdminPage() {
       </div>
 
       {/* Filters Row */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 bg-card-bg border border-card-border p-4 rounded-lg">
-        <div className="space-y-1">
-          <label className="text-[10px] uppercase font-bold tracking-widest text-muted-text">
-            Fulfillment Status
+      <div className="flex flex-col sm:flex-row gap-4 bg-card-bg border border-card-border p-5 rounded-lg shadow-sm">
+        <div className="flex-1 min-w-0 space-y-1.5">
+          <label className="text-[10px] uppercase font-bold tracking-widest text-muted-text flex items-center gap-1.5">
+            <Truck className="h-3 w-3 text-accent" /> Fulfillment Status
           </label>
-          <select
+          <CustomSelect
             value={orderStatus}
-            onChange={(e) => {
-              setOrderStatus(e.target.value);
+            onChange={(val) => {
+              setOrderStatus(val);
               setPage(1);
             }}
-            className="w-full bg-input-bg border border-input-border focus:border-accent text-muted-text px-4 py-2 rounded text-xs outline-none transition-colors"
-          >
-            <option value="">All Fulfillment Statuses</option>
-            <option value="PENDING">PENDING</option>
-            <option value="CONFIRMED">CONFIRMED</option>
-            <option value="PROCESSING">PROCESSING</option>
-            <option value="SHIPPED">SHIPPED</option>
-            <option value="DELIVERED">DELIVERED</option>
-            <option value="CANCELLED">CANCELLED</option>
-          </select>
+            placeholder="All Fulfillment Statuses"
+            options={[
+              { value: 'PENDING', label: 'PENDING' },
+              { value: 'CONFIRMED', label: 'CONFIRMED' },
+              { value: 'PROCESSING', label: 'PROCESSING' },
+              { value: 'SHIPPED', label: 'SHIPPED' },
+              { value: 'DELIVERED', label: 'DELIVERED' },
+              { value: 'CANCELLED', label: 'CANCELLED' },
+            ]}
+          />
         </div>
 
-        <div className="space-y-1">
-          <label className="text-[10px] uppercase font-bold tracking-widest text-muted-text">
-            Payment Status
+        <div className="flex-1 min-w-0 space-y-1.5">
+          <label className="text-[10px] uppercase font-bold tracking-widest text-muted-text flex items-center gap-1.5">
+            <CreditCard className="h-3 w-3 text-accent" /> Payment Status
           </label>
-          <select
+          <CustomSelect
             value={paymentStatus}
-            onChange={(e) => {
-              setPaymentStatus(e.target.value);
+            onChange={(val) => {
+              setPaymentStatus(val);
               setPage(1);
             }}
-            className="w-full bg-input-bg border border-input-border focus:border-accent text-muted-text px-4 py-2 rounded text-xs outline-none transition-colors"
-          >
-            <option value="">All Payment Statuses</option>
-            <option value="UNPAID">UNPAID</option>
-            <option value="PAID">PAID</option>
-            <option value="FAILED">FAILED</option>
-            <option value="REFUNDED">REFUNDED</option>
-          </select>
+            placeholder="All Payment Statuses"
+            options={[
+              { value: 'UNPAID', label: 'UNPAID' },
+              { value: 'PAID', label: 'PAID' },
+              { value: 'FAILED', label: 'FAILED' },
+              { value: 'REFUNDED', label: 'REFUNDED' },
+            ]}
+          />
         </div>
       </div>
 

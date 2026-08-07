@@ -232,9 +232,18 @@ export default function CheckoutPage() {
 
           {/* Cart Review Sidebar */}
           <div className="lg:col-span-5 bg-card-bg border border-card-border rounded-lg p-6 space-y-6">
-            <h2 className="text-lg font-bold uppercase tracking-wider pb-3 border-b border-card-border flex items-center gap-2">
-              <ShoppingBag className="h-5 w-5 text-accent" /> Review Order
-            </h2>
+            <div className="flex items-center justify-between pb-3 border-b border-card-border">
+              <h2 className="text-lg font-bold uppercase tracking-wider flex items-center gap-2">
+                <ShoppingBag className="h-5 w-5 text-accent" /> Review Order
+              </h2>
+              <button
+                type="button"
+                onClick={() => window.dispatchEvent(new Event('open-cart'))}
+                className="text-xs font-bold uppercase tracking-wider text-accent hover:text-accent-hover transition-colors flex items-center gap-1"
+              >
+                Edit
+              </button>
+            </div>
 
             {items.length === 0 ? (
               <div className="text-center py-10 space-y-4">

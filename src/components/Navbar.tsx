@@ -32,8 +32,16 @@ export default function Navbar() {
         setScrolled(false);
       }
     };
+    
+    const handleOpenCart = () => setCartOpen(true);
+    
     window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('open-cart', handleOpenCart);
+    
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('open-cart', handleOpenCart);
+    };
   }, []);
 
   const handleLogout = () => {

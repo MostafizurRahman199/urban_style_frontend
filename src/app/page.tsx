@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useRef, useEffect, useState } from 'react';
+import React, { useRef, useEffect, useState, useCallback } from 'react';
+import useEmblaCarousel from 'embla-carousel-react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import BannerCarousel from '@/components/BannerCarousel';
@@ -18,73 +19,53 @@ interface SliderContainerProps {
 }
 
 function SliderContainer({ children, itemCount }: SliderContainerProps) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [showButtons, setShowButtons] = useState(false);
+  const [emblaRef, emblaApi] = useEmblaCarousel({
+    align: 'start',
+    loop: true,
+    slidesToScroll: 1, // scroll exactly one card at a time
+    containScroll: 'trimSnaps'
+  });
 
-  useEffect(() => {
-    const checkScroll = () => {
-      if (scrollRef.current) {
-        const { scrollWidth, clientWidth } = scrollRef.current;
-        setShowButtons(scrollWidth > clientWidth);
-      }
-    };
-    checkScroll();
-    window.addEventListener('resize', checkScroll);
-    return () => window.removeEventListener('resize', checkScroll);
-  }, [itemCount]);
+  const scrollPrev = useCallback(() => {
+    if (emblaApi) emblaApi.scrollPrev();
+  }, [emblaApi]);
 
-  const handleScroll = (direction: 'left' | 'right') => {
-    if (scrollRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
-      const scrollAmount = clientWidth * 0.75; // Scroll 75% of container width
-
-      if (direction === 'left') {
-        // Circular rotate: if at the start, wrap around to the end
-        if (scrollLeft <= 5) {
-          scrollRef.current.scrollTo({ left: scrollWidth - clientWidth, behavior: 'smooth' });
-        } else {
-          scrollRef.current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
-        }
-      } else {
-        // Circular rotate: if at the end, wrap around to the start
-        if (scrollLeft + clientWidth >= scrollWidth - 5) {
-          scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
-        } else {
-          scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-        }
-      }
-    }
-  };
+  const scrollNext = useCallback(() => {
+    if (emblaApi) emblaApi.scrollNext();
+  }, [emblaApi]);
 
   return (
     <div className="relative group/slider">
-      {/* Scrollable Container */}
+      {/* Scrollable Container (Embla Viewport) */}
       <div
-        ref={scrollRef}
-        className="flex gap-6 overflow-x-auto pb-4 snap-x scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        ref={emblaRef}
+        className="overflow-hidden py-4 -my-4"
       >
-        {children}
+        {/* Embla Container */}
+        <div className="flex -ml-6">
+          {React.Children.map(children, (child) => (
+            <div className="pl-6 flex-[0_0_auto]">
+              {child}
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Slide Navigation Buttons */}
-      {showButtons && (
-        <>
-          <button
-            onClick={() => handleScroll('left')}
-            className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-30 p-2.5 rounded-full bg-black/80 border border-card-border hover:border-accent text-white hover:text-accent opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 shadow-lg"
-            title="Previous"
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </button>
-          <button
-            onClick={() => handleScroll('right')}
-            className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-30 p-2.5 rounded-full bg-black/80 border border-card-border hover:border-accent text-white hover:text-accent opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 shadow-lg"
-            title="Next"
-          >
-            <ChevronRight className="h-5 w-5" />
-          </button>
-        </>
-      )}
+      <button
+        onClick={scrollPrev}
+        className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-30 p-2.5 rounded-full bg-black/80 border border-card-border hover:border-accent text-white hover:text-accent opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 shadow-lg"
+        title="Previous"
+      >
+        <ChevronLeft className="h-5 w-5" />
+      </button>
+      <button
+        onClick={scrollNext}
+        className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-30 p-2.5 rounded-full bg-black/80 border border-card-border hover:border-accent text-white hover:text-accent opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 shadow-lg"
+        title="Next"
+      >
+        <ChevronRight className="h-5 w-5" />
+      </button>
     </div>
   );
 }
@@ -334,7 +315,7 @@ function ProductCard({ product }: ProductCardProps) {
           <h3 className="text-sm font-semibold tracking-wide text-white group-hover:text-accent transition-colors line-clamp-1">
             {product.name}
           </h3>
-          <p className="text-xs text-muted-text line-clamp-2 mt-1 leading-relaxed">
+          <p className="text-xs text-muted-text line-clamp-1 mt-1 leading-relaxed">
             {product.description}
           </p>
         </div>
