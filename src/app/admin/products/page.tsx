@@ -47,6 +47,7 @@ export default function ProductsAdminPage() {
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
   const [discountPrice, setDiscountPrice] = useState('');
+  const [deliveryCharge, setDeliveryCharge] = useState('');
   const [quantity, setQuantity] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [colorsInput, setColorsInput] = useState('');
@@ -122,6 +123,7 @@ export default function ProductsAdminPage() {
     setDescription('');
     setPrice('');
     setDiscountPrice('');
+    setDeliveryCharge('');
     setQuantity('');
     setCategoryId('');
     setColorsInput('');
@@ -145,6 +147,7 @@ export default function ProductsAdminPage() {
     formData.append('description', description);
     formData.append('price', price);
     if (discountPrice.trim()) formData.append('discountPrice', discountPrice.trim());
+    if (deliveryCharge.trim()) formData.append('deliveryCharge', deliveryCharge.trim());
     formData.append('quantity', quantity);
     formData.append('categoryId', categoryId);
     if (videoUrl.trim()) formData.append('videoUrl', videoUrl.trim());
@@ -206,6 +209,7 @@ export default function ProductsAdminPage() {
     setDescription(product.description);
     setPrice(String(product.price));
     setDiscountPrice(product.discountPrice ? String(product.discountPrice) : '');
+    setDeliveryCharge(product.deliveryCharge !== undefined && product.deliveryCharge !== null ? String(product.deliveryCharge) : '');
     setQuantity(String(product.quantity));
     setCategoryId(product.categoryId);
     setColorsInput(product.colors?.join(', ') || '');
@@ -233,6 +237,7 @@ export default function ProductsAdminPage() {
       description,
       price: parseFloat(price),
       ...(discountPrice.trim() ? { discountPrice: parseFloat(discountPrice) } : { discountPrice: null }),
+      ...(deliveryCharge.trim() ? { deliveryCharge: parseFloat(deliveryCharge) } : { deliveryCharge: 0 }),
       quantity: parseInt(quantity, 10),
       categoryId,
       isPopular,
@@ -408,6 +413,7 @@ export default function ProductsAdminPage() {
                     <th className="pb-3">Name</th>
                     <th className="pb-3">Category</th>
                     <th className="pb-3">Price</th>
+                    <th className="pb-3">Delivery</th>
                     <th className="pb-3">Stock</th>
                     <th className="pb-3 text-center">Popular</th>
                     <th className="pb-3 text-center">Status</th>
@@ -453,6 +459,11 @@ export default function ProductsAdminPage() {
                           ) : (
                             <span>৳{Number(prod.price).toFixed(2)}</span>
                           )}
+                        </td>
+
+                        {/* Delivery Charge */}
+                        <td className="py-4 font-mono font-semibold text-muted-text">
+                          ৳{Number(prod.deliveryCharge || 0).toFixed(2)}
                         </td>
 
                         {/* Stock */}
@@ -567,7 +578,7 @@ export default function ProductsAdminPage() {
                   <input
                     type="text"
                     required
-                    placeholder="e.g. Slim Fit Denim Jacket"
+                    placeholder="Write your product name."
                     value={name}
                     onChange={(e) => setName(e.target.value)}
                     className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors"
@@ -583,14 +594,14 @@ export default function ProductsAdminPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-1">
                     <label className="text-xs uppercase tracking-widest text-muted-text font-bold">Price (৳) *</label>
                     <input
                       type="number"
                       step="0.01"
                       required
-                      placeholder="89.99"
+                      placeholder="Product price"
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
                       className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors"
@@ -610,11 +621,23 @@ export default function ProductsAdminPage() {
                   </div>
 
                   <div className="space-y-1">
+                    <label className="text-xs uppercase tracking-widest text-muted-text font-bold">Delivery Charge (৳)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="0.00"
+                      value={deliveryCharge}
+                      onChange={(e) => setDeliveryCharge(e.target.value)}
+                      className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
                     <label className="text-xs uppercase tracking-widest text-muted-text font-bold">Stock Quantity *</label>
                     <input
                       type="number"
                       required
-                      placeholder="45"
+                      placeholder="Available stock quantity"
                       value={quantity}
                       onChange={(e) => setQuantity(e.target.value)}
                       className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors"
@@ -656,7 +679,7 @@ export default function ProductsAdminPage() {
                     <span className="text-[10px] text-accent font-normal lowercase">Check size & type measurement (e.g. 28 inch)</span>
                   </label>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-1 scrollbar-thin p-2 bg-input-bg border border-input-border rounded">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-1 custom-scrollbar p-2 bg-input-bg border border-input-border rounded">
                     {STANDARD_SIZES.map((szKey) => {
                       const entry = selectedSizesMap[szKey] || { enabled: false, customDetail: '' };
                       return (
@@ -872,7 +895,7 @@ export default function ProductsAdminPage() {
                     />
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div className="space-y-1">
                       <label className="text-xs uppercase tracking-widest text-muted-text font-bold">Price (৳)</label>
                       <input
@@ -892,6 +915,18 @@ export default function ProductsAdminPage() {
                         step="0.01"
                         value={discountPrice}
                         onChange={(e) => setDiscountPrice(e.target.value)}
+                        className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs uppercase tracking-widest text-muted-text font-bold">Delivery Charge (৳)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={deliveryCharge}
+                        onChange={(e) => setDeliveryCharge(e.target.value)}
                         className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors"
                       />
                     </div>
@@ -940,7 +975,7 @@ export default function ProductsAdminPage() {
                       <span className="text-[10px] text-accent font-normal lowercase">Check size & type measurement (e.g. 28 inch)</span>
                     </label>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-1 scrollbar-thin p-2 bg-input-bg border border-input-border rounded">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 max-h-52 overflow-y-auto pr-1 custom-scrollbar p-2 bg-input-bg border border-input-border rounded">
                       {STANDARD_SIZES.map((szKey) => {
                         const entry = selectedSizesMap[szKey] || { enabled: false, customDetail: '' };
                         return (

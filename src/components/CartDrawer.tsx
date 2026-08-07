@@ -95,17 +95,14 @@ export default function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                           </h3>
                            <p className="ml-4 text-accent font-mono">৳{(Number(item.price) * item.quantity).toFixed(2)}</p>
                         </div>
-                        <div className="mt-1 flex items-center gap-2 flex-wrap text-xs text-muted-text">
-                          <span>
-                            Color: <span className="text-white uppercase font-medium">{item.color}</span>
+                        <div className="mt-1 flex items-center gap-2 flex-wrap text-xs">
+                          <span className="px-2 py-0.5 rounded bg-accent/20 border border-accent/40 text-accent font-extrabold text-[10px] uppercase">
+                            Color: {item.color}
                           </span>
                           {item.size && (
-                            <>
-                              <span>•</span>
-                              <span>
-                                Size: <span className="text-white uppercase font-medium">{item.size}</span>
-                              </span>
-                            </>
+                            <span className="px-2 py-0.5 rounded bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 font-extrabold text-[10px] uppercase">
+                              Size: {item.size}
+                            </span>
                           )}
                         </div>
                       </div>

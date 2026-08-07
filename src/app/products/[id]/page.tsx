@@ -110,6 +110,7 @@ export default function ProductDetailPage({ params }: PageProps) {
         size: selectedSize || undefined,
         imageUrl: imgUrl,
         stock: product.quantity,
+        deliveryCharge: Number(product.deliveryCharge || 0),
       })
     );
 
@@ -131,6 +132,7 @@ export default function ProductDetailPage({ params }: PageProps) {
         size: selectedSize || undefined,
         imageUrl: imgUrl,
         stock: product.quantity,
+        deliveryCharge: Number(product.deliveryCharge || 0),
       })
     );
 

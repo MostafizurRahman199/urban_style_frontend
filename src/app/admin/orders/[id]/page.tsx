@@ -6,8 +6,9 @@ import {
   useUpdateOrderStatusMutation,
   useUpdateOrderPaymentMutation,
   useUpdateOrderCidMutation,
+  useUpdateOrderDeliveryChargeMutation,
 } from '@/redux/services/api';
-import { ArrowLeft, User, Phone, MapPin, MessageSquare, CreditCard, ShoppingBag, Calendar, AlertCircle, Download, Hash } from 'lucide-react';
+import { ArrowLeft, User, Phone, MapPin, MessageSquare, CreditCard, ShoppingBag, Calendar, AlertCircle, Download, Hash, Truck } from 'lucide-react';
 import Link from 'next/link';
 
 interface PageProps {
@@ -22,16 +23,24 @@ export default function OrderDetailsPage({ params }: PageProps) {
   const [updateStatus, { isLoading: statusUpdating }] = useUpdateOrderStatusMutation();
   const [updatePayment, { isLoading: paymentUpdating }] = useUpdateOrderPaymentMutation();
   const [updateCid, { isLoading: cidUpdating }] = useUpdateOrderCidMutation();
+  const [updateDeliveryCharge, { isLoading: deliveryUpdating }] = useUpdateOrderDeliveryChargeMutation();
 
   const [cidInput, setCidInput] = useState('');
   const [isCidInitialized, setIsCidInitialized] = useState(false);
 
+  const [deliveryChargeInput, setDeliveryChargeInput] = useState('');
+  const [isDeliveryInitialized, setIsDeliveryInitialized] = useState(false);
+
   useEffect(() => {
-    if (order?.cidNumber && !isCidInitialized) {
-      setCidInput(order.cidNumber);
+    if (order && !isCidInitialized) {
+      if (order.cidNumber) setCidInput(order.cidNumber);
       setIsCidInitialized(true);
     }
-  }, [order, isCidInitialized]);
+    if (order && !isDeliveryInitialized) {
+      setDeliveryChargeInput(String(order.deliveryCharge || 0));
+      setIsDeliveryInitialized(true);
+    }
+  }, [order, isCidInitialized, isDeliveryInitialized]);
 
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -71,17 +80,35 @@ export default function OrderDetailsPage({ params }: PageProps) {
   const handleCidSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!cidInput.trim()) {
-      triggerNotification('error', 'Please enter a CID Number.');
+      triggerNotification('error', 'Please enter a valid CID Number.');
       return;
     }
 
     try {
       await updateCid({ id, cidNumber: cidInput.trim() }).unwrap();
-      triggerNotification('success', `CID Number updated to ${cidInput.trim()}`);
+      triggerNotification('success', 'CID Number saved successfully!');
       refetch();
     } catch (err: any) {
       console.error(err);
-      triggerNotification('error', err?.data?.message || 'Failed to update CID Number.');
+      triggerNotification('error', err?.data?.message || 'Failed to save CID Number.');
+    }
+  };
+
+  const handleDeliveryChargeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const charge = parseFloat(deliveryChargeInput);
+    if (isNaN(charge) || charge < 0) {
+      triggerNotification('error', 'Please enter a valid delivery charge.');
+      return;
+    }
+
+    try {
+      await updateDeliveryCharge({ id, deliveryCharge: charge }).unwrap();
+      triggerNotification('success', 'Delivery charge updated successfully!');
+      refetch();
+    } catch (err: any) {
+      console.error(err);
+      triggerNotification('error', err?.data?.message || 'Failed to update delivery charge.');
     }
   };
 
@@ -170,7 +197,7 @@ export default function OrderDetailsPage({ params }: PageProps) {
       )}
 
       {/* Status update controls */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-card-bg border border-card-border p-6 rounded-lg print:hidden">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 bg-card-bg border border-card-border p-6 rounded-lg print:hidden">
         {/* Fulfillment status dropdown */}
         <div className="space-y-2">
           <label className="text-xs uppercase tracking-widest text-muted-text font-bold flex items-center gap-1.5">
@@ -225,9 +252,34 @@ export default function OrderDetailsPage({ params }: PageProps) {
             <button
               type="submit"
               disabled={cidUpdating}
-              className="px-4 py-2 bg-accent text-black font-extrabold uppercase tracking-wider text-[11px] hover:bg-accent-hover transition-colors rounded disabled:opacity-40 whitespace-nowrap"
+              className="px-3 py-2 bg-accent text-black font-extrabold uppercase tracking-wider text-[11px] hover:bg-accent-hover transition-colors rounded disabled:opacity-40 whitespace-nowrap"
             >
-              {cidUpdating ? 'Saving...' : order.cidNumber ? 'Update CID' : 'Add CID Number'}
+              {cidUpdating ? 'Saving...' : order.cidNumber ? 'Update CID' : 'Add CID'}
+            </button>
+          </div>
+        </form>
+
+        {/* Delivery Charge Input & Submit Button */}
+        <form onSubmit={handleDeliveryChargeSubmit} className="space-y-2">
+          <label className="text-xs uppercase tracking-widest text-muted-text font-bold flex items-center gap-1.5">
+            <Truck className="h-4 w-4 text-accent" /> Delivery Charge (৳)
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="number"
+              min="0"
+              step="any"
+              placeholder="0.00"
+              value={deliveryChargeInput}
+              onChange={(e) => setDeliveryChargeInput(e.target.value)}
+              className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-3 py-2 rounded text-xs outline-none transition-colors"
+            />
+            <button
+              type="submit"
+              disabled={deliveryUpdating}
+              className="px-3 py-2 bg-accent text-black font-extrabold uppercase tracking-wider text-[11px] hover:bg-accent-hover transition-colors rounded disabled:opacity-40 whitespace-nowrap"
+            >
+              {deliveryUpdating ? 'Saving...' : 'Update'}
             </button>
           </div>
         </form>
@@ -334,10 +386,30 @@ export default function OrderDetailsPage({ params }: PageProps) {
               );
             })}
 
-            <div className="pt-5 flex justify-between items-center print:border-t-2 print:border-black">
-              <span className="text-base uppercase font-extrabold text-white print:text-black">Grand Total</span>
-              <span className="text-xl sm:text-2xl font-mono font-black text-accent print:text-black">৳{Number(order.totalAmount).toFixed(2)}</span>
-            </div>
+            {(() => {
+              const itemsSubtotal = order.items?.reduce(
+                (sum: number, item: any) => sum + Number(item.price) * item.quantity,
+                0,
+              ) || 0;
+              const delCharge = Number(order.deliveryCharge || 0);
+
+              return (
+                <div className="pt-5 border-t border-card-border/60 space-y-2">
+                  <div className="flex justify-between items-center text-sm font-semibold text-muted-text print:text-black">
+                    <span>Items Subtotal</span>
+                    <span className="font-mono font-bold text-white print:text-black">৳{itemsSubtotal.toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between items-center text-sm font-semibold text-muted-text print:text-black">
+                    <span>Delivery Charge</span>
+                    <span className="font-mono font-bold text-white print:text-black">৳{delCharge.toFixed(2)}</span>
+                  </div>
+                  <div className="pt-2 flex justify-between items-center border-t border-card-border/60 print:border-t-2 print:border-black">
+                    <span className="text-base uppercase font-extrabold text-white print:text-black">Grand Total</span>
+                    <span className="text-xl sm:text-2xl font-mono font-black text-accent print:text-black">৳{Number(order.totalAmount).toFixed(2)}</span>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         </div>
       </div>

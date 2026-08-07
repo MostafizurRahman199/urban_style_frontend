@@ -7,7 +7,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { clearCart } from '@/redux/slices/cartSlice';
 import { useCreateOrderMutation } from '@/redux/services/api';
-import { ShoppingBag, CreditCard, CheckCircle, AlertCircle, Phone, MapPin, User, FileText } from 'lucide-react';
+import { ShoppingBag, CreditCard, CheckCircle, AlertCircle, Phone, MapPin, User, FileText, Truck } from 'lucide-react';
 import Link from 'next/link';
 
 export default function CheckoutPage() {
@@ -20,6 +20,9 @@ export default function CheckoutPage() {
   const [contactNumber, setContactNumber] = useState('');
   const [address, setAddress] = useState('');
   const [message, setMessage] = useState('');
+
+  // Calculate delivery charge automatically from cart items
+  const autoDeliveryCharge = items.reduce((sum, item) => sum + Number(item.deliveryCharge || 0), 0);
 
   // Status States
   const [placedOrder, setPlacedOrder] = useState<any>(null);
@@ -52,6 +55,7 @@ export default function CheckoutPage() {
       contactNumber,
       address,
       message: message || undefined,
+      deliveryCharge: autoDeliveryCharge,
       items: orderItems,
     };
 
@@ -111,6 +115,10 @@ export default function CheckoutPage() {
                 {placedOrder.orderStatus}
               </span>
             </div>
+            <div className="flex justify-between border-b border-card-border/50 pb-3">
+              <span className="text-xs uppercase text-muted-text tracking-wider font-bold">Delivery Charge</span>
+              <span className="text-sm font-mono font-semibold text-white">৳{Number(placedOrder.deliveryCharge || 0).toFixed(2)}</span>
+            </div>
             <div className="flex justify-between pt-2">
               <span className="text-sm uppercase text-white font-bold">Total Amount</span>
               <span className="text-base font-mono font-bold text-accent">৳{Number(placedOrder.totalAmount).toFixed(2)}</span>
@@ -162,7 +170,7 @@ export default function CheckoutPage() {
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Jane Doe"
+                  placeholder="Write your name."
                   value={customerName}
                   onChange={(e) => setCustomerName(e.target.value)}
                   className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors"
@@ -176,7 +184,7 @@ export default function CheckoutPage() {
                 <input
                   type="tel"
                   required
-                  placeholder="e.g. +8801712345678"
+                  placeholder="Write your phone number"
                   value={contactNumber}
                   onChange={(e) => setContactNumber(e.target.value)}
                   className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors"
@@ -190,7 +198,7 @@ export default function CheckoutPage() {
                 <textarea
                   required
                   rows={3}
-                  placeholder="e.g. 123 Fashion Ave, Dhaka, Bangladesh"
+                  placeholder="Write your details address."
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors resize-none"
@@ -203,7 +211,7 @@ export default function CheckoutPage() {
                 </label>
                 <textarea
                   rows={2}
-                  placeholder="e.g. Please call before delivery."
+                  placeholder="Write your message."
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors resize-none"
@@ -260,44 +268,62 @@ export default function CheckoutPage() {
               <div className="space-y-4">
                 <div className="max-h-72 overflow-y-auto space-y-3 pr-2 scrollbar-thin">
                   {items.map((item) => (
-                    <div key={`${item.productId}-${item.color}-${item.size || ''}`} className="flex justify-between items-center gap-3 border-b border-card-border/30 pb-3">
-                      <div className="flex items-center gap-3">
-                        <div className="h-12 w-12 rounded border border-card-border overflow-hidden bg-black flex-shrink-0 flex items-center justify-center">
+                    <div key={`${item.productId}-${item.color}-${item.size || ''}`} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-card-border/40 pb-4">
+                      <div className="flex items-start gap-3.5 flex-1">
+                        <div className="h-16 w-16 rounded-lg border border-card-border overflow-hidden bg-black flex-shrink-0 flex items-center justify-center shadow-inner mt-0.5">
                           {item.imageUrl ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img src={item.imageUrl} alt={item.name} className="h-full w-full object-cover" />
                           ) : (
-                            <ShoppingBag className="h-5 w-5 text-muted-text" />
+                            <ShoppingBag className="h-7 w-7 text-muted-text" />
                           )}
                         </div>
-                        <div>
-                          <h4 className="text-xs font-semibold text-white line-clamp-1">{item.name}</h4>
-                          <span className="text-[10px] text-muted-text uppercase">
-                            Color: {item.color}{item.size ? ` | Size: ${item.size}` : ''} | Qty: {item.quantity}
-                          </span>
+                        <div className="space-y-1.5">
+                          <h4 className="text-sm sm:text-base font-extrabold text-white tracking-wide leading-snug line-clamp-2">{item.name}</h4>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded bg-accent/20 border border-accent/40 text-accent font-extrabold text-[11px] uppercase tracking-wider">
+                              Color: {item.color}
+                            </span>
+                            {item.size && (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded bg-yellow-400/20 border border-yellow-400/40 text-yellow-300 font-extrabold text-[11px] uppercase tracking-wider">
+                                Size: {item.size}
+                              </span>
+                            )}
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded bg-input-bg border border-input-border text-white font-mono font-black text-[11px]">
+                              Qty: {item.quantity}
+                            </span>
+                          </div>
                         </div>
                       </div>
-                      <span className="text-xs font-mono font-bold text-accent">
-                        ৳{(Number(item.price) * item.quantity).toFixed(2)}
-                      </span>
+                      <div className="text-right flex sm:flex-col justify-between items-center sm:items-end w-full sm:w-auto pt-1 sm:pt-0">
+                        <span className="text-xs text-muted-text font-mono font-semibold sm:hidden">Subtotal:</span>
+                        <span className="text-base sm:text-lg font-mono font-black text-accent">
+                          ৳{(Number(item.price) * item.quantity).toFixed(2)}
+                        </span>
+                      </div>
                     </div>
                   ))}
                 </div>
 
-                <div className="space-y-2 pt-2">
-                  <div className="flex justify-between text-xs text-muted-text uppercase tracking-wider">
-                    <span>Shipping</span>
-                    <span>Free</span>
-                  </div>
-                  <div className="flex justify-between text-xs text-muted-text uppercase tracking-wider">
-                    <span>Tax</span>
-                    <span>৳0.00</span>
-                  </div>
-                  <div className="flex justify-between text-sm text-white font-bold uppercase tracking-wider pt-2 border-t border-card-border/50">
-                    <span>Subtotal</span>
-                    <span className="text-accent font-mono text-base">৳{Number(totalAmount).toFixed(2)}</span>
-                  </div>
-                </div>
+                {(() => {
+                  const grandTotal = totalAmount + autoDeliveryCharge;
+                  return (
+                    <div className="space-y-2 pt-2">
+                      <div className="flex justify-between text-xs text-muted-text uppercase tracking-wider">
+                        <span>Items Subtotal</span>
+                        <span className="font-mono text-white">৳{Number(totalAmount).toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-xs text-muted-text uppercase tracking-wider">
+                        <span>Delivery Charge</span>
+                        <span className="font-mono text-white">৳{autoDeliveryCharge.toFixed(2)}</span>
+                      </div>
+                      <div className="flex justify-between text-sm text-white font-bold uppercase tracking-wider pt-2 border-t border-card-border/50">
+                        <span>Total Amount</span>
+                        <span className="text-accent font-mono text-base">৳{grandTotal.toFixed(2)}</span>
+                      </div>
+                    </div>
+                  );
+                })()}
               </div>
             )}
           </div>

@@ -9,6 +9,7 @@ export interface CartItem {
   size?: string;
   imageUrl?: string;
   stock: number;
+  deliveryCharge?: number;
 }
 
 interface CartState {
@@ -55,10 +56,14 @@ const cartSlice = createSlice({
         // If items exist, check stock limits
         const newQty = state.items[existingIndex].quantity + quantity;
         state.items[existingIndex].quantity = Math.min(newQty, action.payload.stock);
+        if (action.payload.deliveryCharge !== undefined) {
+          state.items[existingIndex].deliveryCharge = Number(action.payload.deliveryCharge);
+        }
       } else {
         state.items.push({
           ...action.payload,
           price: Number(action.payload.price),
+          deliveryCharge: Number(action.payload.deliveryCharge || 0),
         });
       }
 

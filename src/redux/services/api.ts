@@ -193,6 +193,14 @@ export const api = createApi({
       }),
       invalidatesTags: ['Order'],
     }),
+    updateOrderDeliveryCharge: builder.mutation({
+      query: ({ id, deliveryCharge }) => ({
+        url: `/orders/${id}/delivery-charge`,
+        method: 'PATCH',
+        body: { deliveryCharge },
+      }),
+      invalidatesTags: ['Order', 'Analytics'],
+    }),
 
     // Analytics Endpoints
     getSummary: builder.query({
@@ -270,6 +278,7 @@ export const {
   useUpdateOrderStatusMutation,
   useUpdateOrderPaymentMutation,
   useUpdateOrderCidMutation,
+  useUpdateOrderDeliveryChargeMutation,
   useGetSummaryQuery,
   useGetOrdersByStatusQuery,
   useGetRevenueOverTimeQuery,

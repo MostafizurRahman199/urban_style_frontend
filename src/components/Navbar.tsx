@@ -19,9 +19,14 @@ export default function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [contactOpen, setContactOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   // Total cart items count
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Handle scroll shadow/opacity effect
   useEffect(() => {
@@ -120,7 +125,7 @@ export default function Navbar() {
                 aria-label="Open Cart"
               >
                 <ShoppingCart className="h-6 w-6" />
-                {cartCount > 0 && (
+                {mounted && cartCount > 0 && (
                   <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-black font-mono ring-2 ring-black">
                     {cartCount}
                   </span>
@@ -129,7 +134,7 @@ export default function Navbar() {
             )}
 
             {/* Admin Dashboard / Login */}
-            {token && (
+            {mounted && token && (
               <div className="flex items-center space-x-3">
                 <Link
                   href="/admin"
