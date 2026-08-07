@@ -185,6 +185,14 @@ export const api = createApi({
       }),
       invalidatesTags: ['Order', 'Analytics'],
     }),
+    updateOrderCid: builder.mutation({
+      query: ({ id, cidNumber }) => ({
+        url: `/orders/${id}/cid`,
+        method: 'PATCH',
+        body: { cidNumber },
+      }),
+      invalidatesTags: ['Order'],
+    }),
 
     // Analytics Endpoints
     getSummary: builder.query({
@@ -261,6 +269,7 @@ export const {
   useGetOrderQuery,
   useUpdateOrderStatusMutation,
   useUpdateOrderPaymentMutation,
+  useUpdateOrderCidMutation,
   useGetSummaryQuery,
   useGetOrdersByStatusQuery,
   useGetRevenueOverTimeQuery,

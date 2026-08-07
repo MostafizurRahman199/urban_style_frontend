@@ -1,12 +1,13 @@
 'use client';
 
-import React, { use, useState } from 'react';
+import React, { use, useState, useEffect } from 'react';
 import {
   useGetOrderQuery,
   useUpdateOrderStatusMutation,
   useUpdateOrderPaymentMutation,
+  useUpdateOrderCidMutation,
 } from '@/redux/services/api';
-import { ArrowLeft, User, Phone, MapPin, MessageSquare, CreditCard, ShoppingBag, Calendar, AlertCircle, Download } from 'lucide-react';
+import { ArrowLeft, User, Phone, MapPin, MessageSquare, CreditCard, ShoppingBag, Calendar, AlertCircle, Download, Hash } from 'lucide-react';
 import Link from 'next/link';
 
 interface PageProps {
@@ -20,6 +21,17 @@ export default function OrderDetailsPage({ params }: PageProps) {
   const { data: order, isLoading, error, refetch } = useGetOrderQuery(id);
   const [updateStatus, { isLoading: statusUpdating }] = useUpdateOrderStatusMutation();
   const [updatePayment, { isLoading: paymentUpdating }] = useUpdateOrderPaymentMutation();
+  const [updateCid, { isLoading: cidUpdating }] = useUpdateOrderCidMutation();
+
+  const [cidInput, setCidInput] = useState('');
+  const [isCidInitialized, setIsCidInitialized] = useState(false);
+
+  useEffect(() => {
+    if (order?.cidNumber && !isCidInitialized) {
+      setCidInput(order.cidNumber);
+      setIsCidInitialized(true);
+    }
+  }, [order, isCidInitialized]);
 
   const [notification, setNotification] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
@@ -53,6 +65,23 @@ export default function OrderDetailsPage({ params }: PageProps) {
     } catch (err: any) {
       console.error(err);
       triggerNotification('error', err?.data?.message || 'Failed to update payment status.');
+    }
+  };
+
+  const handleCidSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!cidInput.trim()) {
+      triggerNotification('error', 'Please enter a CID Number.');
+      return;
+    }
+
+    try {
+      await updateCid({ id, cidNumber: cidInput.trim() }).unwrap();
+      triggerNotification('success', `CID Number updated to ${cidInput.trim()}`);
+      refetch();
+    } catch (err: any) {
+      console.error(err);
+      triggerNotification('error', err?.data?.message || 'Failed to update CID Number.');
     }
   };
 
@@ -92,6 +121,11 @@ export default function OrderDetailsPage({ params }: PageProps) {
       {/* Header Info */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 pb-6 border-b border-card-border print:hidden">
         <div>
+          {order.cidNumber && (
+            <div className="text-xs font-bold uppercase tracking-widest text-accent mb-1 flex items-center gap-1.5">
+              <Hash className="h-3.5 w-3.5" /> CID Number: {order.cidNumber}
+            </div>
+          )}
           <h1 className="text-xl sm:text-2xl font-black uppercase tracking-wider flex items-center gap-3">
             Order Detail <span className="text-accent text-xs font-mono font-normal">({order.id})</span>
           </h1>
@@ -108,9 +142,14 @@ export default function OrderDetailsPage({ params }: PageProps) {
       </div>
 
       {/* Print-only Invoice Header */}
-      <div className="hidden print:block mb-8">
-        <h1 className="text-2xl font-black uppercase mb-2">URBAN STYLE - Invoice</h1>
-        <div className="text-sm">
+      <div className="hidden print:block mb-8 border-b border-black pb-4">
+        <h1 className="text-2xl font-black uppercase mb-3">URBAN STYLE - Invoice</h1>
+        <div className="text-sm space-y-1">
+          {order.cidNumber && (
+            <p className="text-base font-bold text-black">
+              <strong>CID Number:</strong> {order.cidNumber}
+            </p>
+          )}
           <p><strong>Order ID:</strong> {order.id}</p>
           <p><strong>Date:</strong> {new Date(order.createdAt).toLocaleString()}</p>
         </div>
@@ -131,7 +170,7 @@ export default function OrderDetailsPage({ params }: PageProps) {
       )}
 
       {/* Status update controls */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-card-bg border border-card-border p-6 rounded-lg print:hidden">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 bg-card-bg border border-card-border p-6 rounded-lg print:hidden">
         {/* Fulfillment status dropdown */}
         <div className="space-y-2">
           <label className="text-xs uppercase tracking-widest text-muted-text font-bold flex items-center gap-1.5">
@@ -169,6 +208,29 @@ export default function OrderDetailsPage({ params }: PageProps) {
             <option value="REFUNDED">REFUNDED</option>
           </select>
         </div>
+
+        {/* CID Number Input & Submit Button */}
+        <form onSubmit={handleCidSubmit} className="space-y-2">
+          <label className="text-xs uppercase tracking-widest text-muted-text font-bold flex items-center gap-1.5">
+            <Hash className="h-4 w-4 text-accent" /> CID Number
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Enter CID Number"
+              value={cidInput}
+              onChange={(e) => setCidInput(e.target.value)}
+              className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-3 py-2 rounded text-xs outline-none transition-colors"
+            />
+            <button
+              type="submit"
+              disabled={cidUpdating}
+              className="px-4 py-2 bg-accent text-black font-extrabold uppercase tracking-wider text-[11px] hover:bg-accent-hover transition-colors rounded disabled:opacity-40 whitespace-nowrap"
+            >
+              {cidUpdating ? 'Saving...' : order.cidNumber ? 'Update CID' : 'Add CID Number'}
+            </button>
+          </div>
+        </form>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start print:block">

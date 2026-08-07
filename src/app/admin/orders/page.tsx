@@ -151,7 +151,7 @@ export default function OrdersAdminPage() {
               type="text"
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              placeholder="Search by Order ID, Name, or Phone..."
+              placeholder="Search by Order ID, CID Number, Name, or Phone..."
               className="w-full bg-input-bg border border-input-border focus:border-accent text-white pl-10 pr-4 py-2.5 rounded-md text-xs outline-none transition-colors"
             />
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-text" />
@@ -225,7 +225,7 @@ export default function OrdersAdminPage() {
               <table className="w-full text-left border-collapse text-xs min-w-[900px]">
                 <thead>
                   <tr className="border-b border-card-border text-muted-text uppercase tracking-widest font-bold">
-                    <th className="py-3 px-2">Order ID</th>
+                    <th className="py-3 px-2">Order ID / CID</th>
                     <th className="py-3 px-2">Customer</th>
                     <th className="py-3 px-2">Contact</th>
                     <th className="py-3 px-2">Date</th>
@@ -238,9 +238,20 @@ export default function OrdersAdminPage() {
                 <tbody className="divide-y divide-card-border/40 font-sans">
                   {ordersData.data.map((order: any) => (
                     <tr key={order.id} className="hover:bg-black/20 transition-colors">
-                      {/* ID */}
-                      <td className="py-4 px-2 font-mono font-semibold text-white max-w-[120px] truncate">
-                        {order.id}
+                      {/* ID / CID */}
+                      <td className="py-4 px-2 font-mono font-semibold text-white max-w-[140px] truncate">
+                        {order.cidNumber ? (
+                          <div className="space-y-0.5">
+                            <span className="text-accent font-bold block text-[11px]">
+                              CID: {order.cidNumber}
+                            </span>
+                            <span className="text-[9px] text-muted-text block truncate">
+                              {order.id}
+                            </span>
+                          </div>
+                        ) : (
+                          <span>{order.id}</span>
+                        )}
                       </td>
 
                       {/* Name */}
