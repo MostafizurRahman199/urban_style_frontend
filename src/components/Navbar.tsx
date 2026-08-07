@@ -127,7 +127,7 @@ export default function Navbar() {
             )}
 
             {/* Admin Dashboard / Login */}
-            {token ? (
+            {token && (
               <div className="flex items-center space-x-3">
                 <Link
                   href="/admin"
@@ -145,15 +145,6 @@ export default function Navbar() {
                   <LogOut className="h-5 w-5" />
                 </button>
               </div>
-            ) : (
-              <Link
-                href="/admin/login"
-                className="p-2 text-white hover:text-accent transition-colors flex items-center gap-1.5 text-sm font-medium"
-                title="Admin Login"
-              >
-                <User className="h-5 w-5" />
-                <span className="hidden sm:inline text-xs font-semibold uppercase tracking-wider">Admin</span>
-              </Link>
             )}
 
             {/* Mobile menu button */}
