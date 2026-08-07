@@ -221,50 +221,50 @@ export default function OrdersAdminPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse text-xs">
+            <div className="overflow-x-auto -mx-6 px-6 sm:mx-0 sm:px-0">
+              <table className="w-full text-left border-collapse text-xs min-w-[900px]">
                 <thead>
                   <tr className="border-b border-card-border text-muted-text uppercase tracking-widest font-bold">
-                    <th className="pb-3">Order ID</th>
-                    <th className="pb-3">Customer</th>
-                    <th className="pb-3">Contact</th>
-                    <th className="pb-3">Date</th>
-                    <th className="pb-3">Total</th>
-                    <th className="pb-3 text-center">Fulfillment</th>
-                    <th className="pb-3 text-center">Payment</th>
-                    <th className="pb-3 text-right">Details</th>
+                    <th className="py-3 px-2">Order ID</th>
+                    <th className="py-3 px-2">Customer</th>
+                    <th className="py-3 px-2">Contact</th>
+                    <th className="py-3 px-2">Date</th>
+                    <th className="py-3 px-2">Total</th>
+                    <th className="py-3 px-2 text-center">Fulfillment</th>
+                    <th className="py-3 px-2 text-center">Payment</th>
+                    <th className="py-3 px-2 text-right">Details</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-card-border/40 font-sans">
                   {ordersData.data.map((order: any) => (
                     <tr key={order.id} className="hover:bg-black/20 transition-colors">
                       {/* ID */}
-                      <td className="py-4 font-mono font-semibold text-white max-w-[120px] truncate pr-4">
+                      <td className="py-4 px-2 font-mono font-semibold text-white max-w-[120px] truncate">
                         {order.id}
                       </td>
 
                       {/* Name */}
-                      <td className="py-4 font-bold text-white max-w-[150px] truncate pr-4">
+                      <td className="py-4 px-2 font-bold text-white max-w-[150px] truncate">
                         {order.customerName}
                       </td>
 
                       {/* Contact */}
-                      <td className="py-4 text-muted-text">
+                      <td className="py-4 px-2 text-muted-text whitespace-nowrap">
                         {order.contactNumber}
                       </td>
 
                       {/* Date */}
-                      <td className="py-4 text-muted-text">
+                      <td className="py-4 px-2 text-muted-text whitespace-nowrap">
                         {new Date(order.createdAt).toLocaleDateString()}
                       </td>
 
                       {/* Total */}
-                      <td className="py-4 font-mono font-bold text-accent">
+                      <td className="py-4 px-2 font-mono font-bold text-accent whitespace-nowrap">
                         ৳{Number(order.totalAmount).toFixed(2)}
                       </td>
 
                       {/* Order Status */}
-                      <td className="py-4 text-center">
+                      <td className="py-4 px-2 text-center whitespace-nowrap">
                         <span
                           className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase border ${getOrderStatusStyle(
                             order.orderStatus
@@ -275,7 +275,7 @@ export default function OrdersAdminPage() {
                       </td>
 
                       {/* Payment Status */}
-                      <td className="py-4 text-center">
+                      <td className="py-4 px-2 text-center whitespace-nowrap">
                         <span
                           className={`px-2 py-0.5 rounded text-[9px] font-extrabold uppercase border ${getPaymentStatusStyle(
                             order.paymentStatus
@@ -286,7 +286,7 @@ export default function OrdersAdminPage() {
                       </td>
 
                       {/* Action */}
-                      <td className="py-4 text-right">
+                      <td className="py-4 px-2 text-right whitespace-nowrap">
                         <Link
                           href={`/admin/orders/${order.id}`}
                           className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-card-border hover:border-accent/40 rounded text-[10px] font-bold uppercase tracking-wider text-white transition-colors"
