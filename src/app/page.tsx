@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
 import BannerCarousel from '@/components/BannerCarousel';
@@ -8,60 +8,98 @@ import {
   useGetProductsQuery,
   useGetCategoriesQuery,
 } from '@/redux/services/api';
-import { Search, ShoppingBag, Eye, Star, ChevronLeft, ChevronRight, SlidersHorizontal } from 'lucide-react';
+import { ShoppingBag, Eye, Star, ChevronLeft, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 
+// Reusable slider container with arrow indicators and circular rotation (loop scroll)
+interface SliderContainerProps {
+  children: React.ReactNode;
+  itemCount: number;
+}
+
+function SliderContainer({ children, itemCount }: SliderContainerProps) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [showButtons, setShowButtons] = useState(false);
+
+  useEffect(() => {
+    const checkScroll = () => {
+      if (scrollRef.current) {
+        const { scrollWidth, clientWidth } = scrollRef.current;
+        setShowButtons(scrollWidth > clientWidth);
+      }
+    };
+    checkScroll();
+    window.addEventListener('resize', checkScroll);
+    return () => window.removeEventListener('resize', checkScroll);
+  }, [itemCount]);
+
+  const handleScroll = (direction: 'left' | 'right') => {
+    if (scrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = scrollRef.current;
+      const scrollAmount = clientWidth * 0.75; // Scroll 75% of container width
+
+      if (direction === 'left') {
+        // Circular rotate: if at the start, wrap around to the end
+        if (scrollLeft <= 5) {
+          scrollRef.current.scrollTo({ left: scrollWidth - clientWidth, behavior: 'smooth' });
+        } else {
+          scrollRef.current.scrollBy({ left: -scrollAmount, behavior: 'smooth' });
+        }
+      } else {
+        // Circular rotate: if at the end, wrap around to the start
+        if (scrollLeft + clientWidth >= scrollWidth - 5) {
+          scrollRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+        } else {
+          scrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+        }
+      }
+    }
+  };
+
+  return (
+    <div className="relative group/slider">
+      {/* Scrollable Container */}
+      <div
+        ref={scrollRef}
+        className="flex gap-6 overflow-x-auto pb-4 snap-x scroll-smooth [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+      >
+        {children}
+      </div>
+
+      {/* Slide Navigation Buttons */}
+      {showButtons && (
+        <>
+          <button
+            onClick={() => handleScroll('left')}
+            className="absolute left-[-20px] top-1/2 -translate-y-1/2 z-30 p-2.5 rounded-full bg-black/80 border border-card-border hover:border-accent text-white hover:text-accent opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 shadow-lg"
+            title="Previous"
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </button>
+          <button
+            onClick={() => handleScroll('right')}
+            className="absolute right-[-20px] top-1/2 -translate-y-1/2 z-30 p-2.5 rounded-full bg-black/80 border border-card-border hover:border-accent text-white hover:text-accent opacity-0 group-hover/slider:opacity-100 transition-opacity duration-300 shadow-lg"
+            title="Next"
+          >
+            <ChevronRight className="h-5 w-5" />
+          </button>
+        </>
+      )}
+    </div>
+  );
+}
+
 export default function HomePage() {
-  // Filter States
-  const [selectedCategory, setSelectedCategory] = useState<string>('');
-  const [searchTerm, setSearchTerm] = useState<string>('');
-  const [debouncedSearch, setDebouncedSearch] = useState<string>('');
-  const [page, setPage] = useState<number>(1);
-  const limit = 8;
-
-  // Debounce search input
-  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    // In a real app we'd debounce, for now we let users hit enter or click search,
-    // or update debouncedSearch after a delay:
-  };
-
-  const triggerSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    setDebouncedSearch(searchTerm);
-    setPage(1);
-  };
-
   // Queries
   const { data: categories } = useGetCategoriesQuery(undefined);
 
-  // Fetch paginated, filterable products
-  const { data: productsData, isLoading: productsLoading } = useGetProductsQuery({
-    page,
-    limit,
-    ...(selectedCategory && { categoryId: selectedCategory }),
-    ...(debouncedSearch && { search: debouncedSearch }),
-    isActive: 'true',
-  });
-
-  // Fetch popular products separately for highlight
+  // Fetch popular products separately for highlight slider
   const { data: popularProductsData } = useGetProductsQuery({
     page: 1,
-    limit: 4,
+    limit: 10,
     isPopular: 'true',
     isActive: 'true',
   });
-
-  const handleCategorySelect = (categoryId: string) => {
-    setSelectedCategory(categoryId);
-    setPage(1);
-  };
-
-  const handlePageChange = (newPage: number) => {
-    if (newPage < 1 || (productsData?.meta && newPage > productsData.meta.totalPages)) return;
-    setPage(newPage);
-    document.getElementById('products')?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   return (
     <div className="flex flex-col min-h-screen bg-black text-white">
@@ -71,7 +109,7 @@ export default function HomePage() {
       <BannerCarousel />
 
       <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
-        {/* Shop by Category Section */}
+        {/* Shop by Category Section (Slider) */}
         {categories && categories.length > 0 && (
           <section className="space-y-6">
             <div className="flex items-center justify-between">
@@ -81,38 +119,48 @@ export default function HomePage() {
               <div className="h-px bg-card-border flex-grow ml-6 hidden sm:block" />
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+            <SliderContainer itemCount={categories.length}>
               {categories.map((cat: any) => (
                 <Link
                   key={cat.id}
                   href={`/all-products?category=${cat.id}`}
-                  className="group relative h-28 flex flex-col justify-end p-4 border border-card-border hover:border-accent/40 bg-card-bg hover:bg-black/40 rounded transition-all duration-300 overflow-hidden"
+                  className="min-w-[150px] sm:min-w-[200px] w-[200px] flex-shrink-0 snap-start group relative flex flex-col items-center justify-center p-6 border border-card-border hover:border-accent/50 bg-card-bg/60 hover:bg-card-bg/95 rounded-lg transition-all duration-300 overflow-hidden shadow-sm hover:shadow-[0_0_20px_rgba(212,175,55,0.15)] hover:-translate-y-1"
                 >
-                  {/* Category Icon / Image */}
-                  {cat.iconUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={cat.iconUrl}
-                      alt={cat.name}
-                      className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity duration-300"
-                    />
-                  ) : (
-                    <div className="absolute inset-0 bg-radial-gradient from-accent/5 via-transparent to-transparent opacity-50" />
-                  )}
-                  
-                  {/* Subtle color highlight */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
+                  {/* Glowing background animation */}
+                  <div className="absolute inset-0 bg-radial-gradient from-accent/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
-                  <span className="relative z-20 font-black uppercase tracking-wider text-xs sm:text-sm text-white group-hover:text-accent transition-colors">
+                  {/* Circular Icon Container */}
+                  <div className="relative w-16 h-16 rounded-full flex items-center justify-center bg-black/40 border border-card-border group-hover:border-accent/40 group-hover:bg-black/60 transition-all duration-300 overflow-hidden mb-4 z-10">
+                    {cat.iconUrl ? (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={cat.iconUrl}
+                        alt={cat.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                    ) : (
+                      <span className="text-xl font-black uppercase tracking-wider text-muted-text group-hover:text-accent transition-colors">
+                        {cat.name[0]}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Category Title */}
+                  <span className="relative z-10 font-bold uppercase tracking-widest text-xs text-muted-text group-hover:text-white transition-colors text-center truncate w-full">
                     {cat.name}
+                  </span>
+
+                  {/* Tiny arrow hint */}
+                  <span className="text-[9px] font-black uppercase tracking-widest text-accent opacity-0 group-hover:opacity-100 mt-2 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
+                    Explore &rarr;
                   </span>
                 </Link>
               ))}
-            </div>
+            </SliderContainer>
           </section>
         )}
 
-        {/* Popular Section */}
+        {/* Popular Section (Slider) */}
         {popularProductsData?.data && popularProductsData.data.length > 0 && (
           <section className="space-y-6">
             <div className="flex items-center justify-between">
@@ -125,144 +173,20 @@ export default function HomePage() {
               <div className="h-px bg-card-border flex-grow ml-6 hidden sm:block" />
             </div>
 
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+            <SliderContainer itemCount={popularProductsData.data.length}>
               {popularProductsData.data.map((product: any) => (
-                <ProductCard key={product.id} product={product} />
+                <div key={product.id} className="min-w-[250px] sm:min-w-[280px] w-[280px] flex-shrink-0 snap-start">
+                  <ProductCard product={product} />
+                </div>
               ))}
-            </div>
+            </SliderContainer>
           </section>
         )}
 
-        {/* Collection Shop Section */}
-        <section id="products" className="space-y-8 scroll-mt-24">
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-card-border pb-6">
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-black uppercase tracking-wider">
-                Our <span className="text-accent">Catalog</span>
-              </h2>
-              <p className="text-muted-text text-xs mt-1 uppercase tracking-widest">
-                Browse through premium streetwear essentials
-              </p>
-            </div>
-
-            {/* Search Input */}
-            <form onSubmit={triggerSearch} className="relative max-w-md w-full">
-              <input
-                type="text"
-                placeholder="Search products..."
-                value={searchTerm}
-                onChange={handleSearchChange}
-                className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 pl-10 rounded text-sm outline-none transition-colors placeholder:text-muted-text"
-              />
-              <Search className="absolute left-3 top-3 h-4.5 w-4.5 text-muted-text" />
-              <button type="submit" className="hidden">Search</button>
-            </form>
-          </div>
-
-          {/* Category Filter Pills */}
-          <div className="flex items-center space-x-2 overflow-x-auto pb-2 scrollbar-thin">
-            <button
-              onClick={() => handleCategorySelect('')}
-              className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded transition-colors whitespace-nowrap ${
-                selectedCategory === ''
-                  ? 'bg-accent text-black'
-                  : 'bg-card-bg text-white hover:bg-card-border'
-              }`}
-            >
-              All Collection
-            </button>
-            {categories?.map((cat: any) => (
-              <button
-                key={cat.id}
-                onClick={() => handleCategorySelect(cat.id)}
-                className={`px-4 py-2 text-xs font-bold uppercase tracking-wider rounded transition-colors whitespace-nowrap ${
-                  selectedCategory === cat.id
-                    ? 'bg-accent text-black'
-                    : 'bg-card-bg text-white hover:bg-card-border'
-                }`}
-              >
-                {cat.name}
-              </button>
-            ))}
-          </div>
-
-          {/* Products Loading/List Grid */}
-          {productsLoading ? (
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-              {[...Array(limit)].map((_, idx) => (
-                <div key={idx} className="space-y-4 animate-pulse">
-                  <div className="aspect-[4/5] bg-card-bg border border-card-border rounded" />
-                  <div className="h-4 bg-card-bg rounded w-2/3" />
-                  <div className="h-4 bg-card-bg rounded w-1/3" />
-                </div>
-              ))}
-            </div>
-          ) : !productsData?.data || productsData.data.length === 0 ? (
-            <div className="text-center py-20 bg-card-bg border border-card-border rounded flex flex-col items-center justify-center space-y-4">
-              <SlidersHorizontal className="h-12 w-12 text-muted-text/30" />
-              <p className="text-muted-text font-medium">No products found matching your filters</p>
-              <button
-                onClick={() => {
-                  setSelectedCategory('');
-                  setSearchTerm('');
-                  setDebouncedSearch('');
-                }}
-                className="px-4 py-2 bg-accent text-black font-semibold text-xs uppercase tracking-wider rounded hover:bg-accent-hover transition-colors"
-              >
-                Reset Filters
-              </button>
-            </div>
-          ) : (
-            <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-                {productsData.data.map((product: any) => (
-                  <ProductCard key={product.id} product={product} />
-                ))}
-              </div>
-
-              {/* Pagination controls */}
-              {productsData.meta && productsData.meta.totalPages > 1 && (
-                <div className="flex items-center justify-between border-t border-card-border pt-6 mt-8">
-                  <span className="text-xs text-muted-text uppercase tracking-widest">
-                    Page {productsData.meta.page} of {productsData.meta.totalPages} ({productsData.meta.total} items)
-                  </span>
-                  <div className="flex items-center space-x-2">
-                    <button
-                      onClick={() => handlePageChange(page - 1)}
-                      disabled={page === 1}
-                      className="p-2 border border-card-border rounded bg-card-bg hover:bg-card-border disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-white"
-                    >
-                      <ChevronLeft className="h-4 w-4" />
-                    </button>
-                    {[...Array(productsData.meta.totalPages)].map((_, idx) => {
-                      const pageNum = idx + 1;
-                      return (
-                        <button
-                          key={pageNum}
-                          onClick={() => handlePageChange(pageNum)}
-                          className={`w-8 h-8 rounded text-xs font-mono border transition-colors ${
-                            pageNum === page
-                              ? 'bg-accent border-accent text-black font-bold'
-                              : 'bg-card-bg border-card-border text-white hover:bg-card-border'
-                          }`}
-                        >
-                          {pageNum}
-                        </button>
-                      );
-                    })}
-                    <button
-                      onClick={() => handlePageChange(page + 1)}
-                      disabled={page === productsData.meta.totalPages}
-                      className="p-2 border border-card-border rounded bg-card-bg hover:bg-card-border disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-white"
-                    >
-                      <ChevronRight className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              )}
-            </>
-          )}
-        </section>
+        {/* Category-wise Sections */}
+        {categories?.map((category: any) => (
+          <CategoryProductSection key={category.id} category={category} />
+        ))}
       </main>
 
       <Footer />
@@ -270,6 +194,74 @@ export default function HomePage() {
   );
 }
 
+// Category Wise Product Slider Component
+interface CategoryProductSectionProps {
+  category: {
+    id: string;
+    name: string;
+  };
+}
+
+function CategoryProductSection({ category }: CategoryProductSectionProps) {
+  const { data: productsData, isLoading } = useGetProductsQuery({
+    limit: 10,
+    categoryId: category.id,
+    isActive: 'true',
+  });
+
+  if (isLoading) {
+    return (
+      <section className="space-y-6">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl sm:text-2xl font-black uppercase tracking-wider">
+            {category.name} <span className="text-accent">Collection</span>
+          </h2>
+          <div className="h-px bg-card-border flex-grow ml-6" />
+        </div>
+        <div className="flex gap-6 overflow-x-auto pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden snap-x">
+          {[...Array(4)].map((_, idx) => (
+            <div key={idx} className="min-w-[250px] sm:min-w-[280px] w-[280px] space-y-4 animate-pulse flex-shrink-0">
+              <div className="aspect-[4/5] bg-card-bg border border-card-border rounded" />
+              <div className="h-4 bg-card-bg rounded w-2/3" />
+              <div className="h-4 bg-card-bg rounded w-1/3" />
+            </div>
+          ))}
+        </div>
+      </section>
+    );
+  }
+
+  if (!productsData?.data || productsData.data.length === 0) {
+    return null;
+  }
+
+  return (
+    <section className="space-y-6">
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl sm:text-2xl font-black uppercase tracking-wider">
+          {category.name} <span className="text-accent">Collection</span>
+        </h2>
+        <div className="h-px bg-card-border flex-grow ml-6 hidden sm:block" />
+        <Link
+          href={`/all-products?category=${category.id}`}
+          className="text-xs uppercase font-extrabold tracking-widest text-accent hover:text-white transition-colors ml-4 whitespace-nowrap"
+        >
+          View All &rarr;
+        </Link>
+      </div>
+
+      <SliderContainer itemCount={productsData.data.length}>
+        {productsData.data.map((product: any) => (
+          <div key={product.id} className="min-w-[250px] sm:min-w-[280px] w-[280px] flex-shrink-0 snap-start">
+            <ProductCard product={product} />
+          </div>
+        ))}
+      </SliderContainer>
+    </section>
+  );
+}
+
+// Reusable Product Card Component
 interface ProductCardProps {
   product: {
     id: string;
@@ -295,7 +287,10 @@ function ProductCard({ product }: ProductCardProps) {
   const isLowStock = !isOutOfStock && product.quantity <= 5;
 
   return (
-    <div className="group relative flex flex-col bg-card-bg border border-card-border hover:border-accent/40 rounded transition-all duration-300 overflow-hidden h-full">
+    <Link
+      href={`/products/${product.id}`}
+      className="group flex flex-col bg-card-bg border border-card-border hover:border-accent/40 rounded transition-all duration-300 overflow-hidden h-full hover:-translate-y-1"
+    >
       {/* Product Image Wrapper */}
       <div className="relative aspect-[4/5] overflow-hidden bg-black flex items-center justify-center border-b border-card-border">
         {mainImage ? (
@@ -326,17 +321,6 @@ function ProductCard({ product }: ProductCardProps) {
             </span>
           ) : null}
         </div>
-
-        {/* Hover Action Overlay */}
-        <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition-opacity duration-300 z-20">
-          <Link
-            href={`/products/${product.id}`}
-            className="p-3 bg-white text-black rounded-full hover:bg-accent hover:text-black transition-colors"
-            title="View Details"
-          >
-            <Eye className="h-5 w-5" />
-          </Link>
-        </div>
       </div>
 
       {/* Info */}
@@ -348,7 +332,7 @@ function ProductCard({ product }: ProductCardProps) {
             </span>
           )}
           <h3 className="text-sm font-semibold tracking-wide text-white group-hover:text-accent transition-colors line-clamp-1">
-            <Link href={`/products/${product.id}`}>{product.name}</Link>
+            {product.name}
           </h3>
           <p className="text-xs text-muted-text line-clamp-2 mt-1 leading-relaxed">
             {product.description}
@@ -359,14 +343,11 @@ function ProductCard({ product }: ProductCardProps) {
           <span className="text-accent font-mono font-bold text-sm sm:text-base">
             ${Number(product.price).toFixed(2)}
           </span>
-          <Link
-            href={`/products/${product.id}`}
-            className="text-[10px] font-bold uppercase tracking-wider text-white hover:text-accent transition-colors border border-card-border hover:border-accent/40 px-2.5 py-1 rounded"
-          >
-            View
-          </Link>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-white group-hover:text-accent transition-colors border border-card-border group-hover:border-accent/40 px-2.5 py-1 rounded">
+            Explore
+          </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }

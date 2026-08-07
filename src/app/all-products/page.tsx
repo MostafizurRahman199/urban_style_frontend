@@ -349,7 +349,10 @@ function ProductCard({ product }: ProductCardProps) {
   const isLowStock = !isOutOfStock && product.quantity <= 5;
 
   return (
-    <div className="group relative flex flex-col bg-card-bg border border-card-border hover:border-accent/40 rounded transition-all duration-300 overflow-hidden h-full">
+    <Link
+      href={`/products/${product.id}`}
+      className="group flex flex-col bg-card-bg border border-card-border hover:border-accent/40 rounded transition-all duration-300 overflow-hidden h-full hover:-translate-y-1"
+    >
       {/* Product Image Wrapper */}
       <div className="relative aspect-[4/5] overflow-hidden bg-black flex items-center justify-center border-b border-card-border">
         {mainImage ? (
@@ -380,17 +383,6 @@ function ProductCard({ product }: ProductCardProps) {
             </span>
           ) : null}
         </div>
-
-        {/* Hover Action Overlay */}
-        <div className="absolute inset-0 bg-black/70 opacity-0 group-hover:opacity-100 flex items-center justify-center gap-3 transition-opacity duration-300 z-20">
-          <Link
-            href={`/products/${product.id}`}
-            className="p-3 bg-white text-black rounded-full hover:bg-accent hover:text-black transition-colors"
-            title="View Details"
-          >
-            <Eye className="h-5 w-5" />
-          </Link>
-        </div>
       </div>
 
       {/* Info */}
@@ -402,7 +394,7 @@ function ProductCard({ product }: ProductCardProps) {
             </span>
           )}
           <h3 className="text-sm font-semibold tracking-wide text-white group-hover:text-accent transition-colors line-clamp-1">
-            <Link href={`/products/${product.id}`}>{product.name}</Link>
+            {product.name}
           </h3>
           <p className="text-xs text-muted-text line-clamp-2 mt-1 leading-relaxed">
             {product.description}
@@ -413,15 +405,12 @@ function ProductCard({ product }: ProductCardProps) {
           <span className="text-accent font-mono font-bold text-sm sm:text-base">
             ${Number(product.price).toFixed(2)}
           </span>
-          <Link
-            href={`/products/${product.id}`}
-            className="text-[10px] font-bold uppercase tracking-wider text-white hover:text-accent transition-colors border border-card-border hover:border-accent/40 px-2.5 py-1 rounded"
-          >
-            View
-          </Link>
+          <span className="text-[10px] font-bold uppercase tracking-wider text-white group-hover:text-accent transition-colors border border-card-border group-hover:border-accent/40 px-2.5 py-1 rounded">
+            Explore
+          </span>
         </div>
       </div>
-    </div>
+    </Link>
   );
 }
 

@@ -6,7 +6,7 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { useGetMeQuery } from '@/redux/services/api';
 import { logout, setAdminUser } from '@/redux/slices/authSlice';
-import { LayoutDashboard, FolderKanban, ShoppingBag, Image, ShoppingCart, LogOut, ExternalLink, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, FolderKanban, ShoppingBag, Image, ShoppingCart, LogOut, ExternalLink, ChevronRight, Mail } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -67,6 +67,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'Products', path: '/admin/products', icon: ShoppingBag },
     { name: 'Banners', path: '/admin/banners', icon: Image },
     { name: 'Orders', path: '/admin/orders', icon: ShoppingCart },
+    { name: 'Messages', path: '/admin/messages', icon: Mail },
   ];
 
   const handleLogout = () => {

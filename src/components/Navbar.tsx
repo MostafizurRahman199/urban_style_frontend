@@ -8,6 +8,7 @@ import { RootState } from '@/redux/store';
 import { logout } from '@/redux/slices/authSlice';
 import { ShoppingCart, User, LogOut, Menu, X, Settings } from 'lucide-react';
 import CartDrawer from './CartDrawer';
+import ContactModal from './ContactModal';
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -17,6 +18,7 @@ export default function Navbar() {
   const [cartOpen, setCartOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const [contactOpen, setContactOpen] = useState(false);
 
   // Total cart items count
   const cartCount = cartItems.reduce((sum, item) => sum + item.quantity, 0);
@@ -70,10 +72,12 @@ export default function Navbar() {
                 Home
               </Link>
               <Link
-                href="/#products"
-                className="transition-colors hover:text-accent text-white"
+                href="/all-products"
+                className={`transition-colors hover:text-accent ${
+                  pathname === '/all-products' ? 'text-accent' : 'text-white'
+                }`}
               >
-                Collection
+                All Products
               </Link>
               <Link
                 href="/checkout"
@@ -83,6 +87,12 @@ export default function Navbar() {
               >
                 Checkout
               </Link>
+              <button
+                onClick={() => setContactOpen(true)}
+                className="transition-colors hover:text-accent text-white text-sm font-semibold tracking-wider uppercase text-left"
+              >
+                Contact
+              </button>
             </nav>
           ) : (
             <div className="hidden md:flex items-center text-xs font-semibold uppercase tracking-wider text-accent border border-accent/20 px-3 py-1 rounded bg-accent/5">
@@ -164,11 +174,13 @@ export default function Navbar() {
                 Home
               </Link>
               <Link
-                href="/#products"
+                href="/all-products"
                 onClick={() => setMobileMenuOpen(false)}
-                className="block px-3 py-3 rounded-md hover:bg-card-bg text-white"
+                className={`block px-3 py-3 rounded-md hover:bg-card-bg ${
+                  pathname === '/all-products' ? 'text-accent' : 'text-white'
+                }`}
               >
-                Collection
+                All Products
               </Link>
               <Link
                 href="/checkout"
@@ -179,6 +191,15 @@ export default function Navbar() {
               >
                 Checkout
               </Link>
+              <button
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  setContactOpen(true);
+                }}
+                className="block w-full px-3 py-3 rounded-md hover:bg-card-bg text-white text-center font-semibold tracking-widest uppercase text-sm"
+              >
+                Contact
+              </button>
             </div>
           </div>
         )}
@@ -186,6 +207,9 @@ export default function Navbar() {
 
       {/* Cart Drawer */}
       <CartDrawer isOpen={cartOpen} onClose={() => setCartOpen(false)} />
+
+      {/* Contact Modal */}
+      <ContactModal isOpen={contactOpen} onClose={() => setContactOpen(false)} />
     </>
   );
 }

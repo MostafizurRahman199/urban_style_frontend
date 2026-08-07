@@ -15,7 +15,7 @@ export const api = createApi({
       return headers;
     },
   }),
-  tagTypes: ['Category', 'Product', 'Banner', 'Order', 'Analytics', 'Auth'],
+  tagTypes: ['Category', 'Product', 'Banner', 'Order', 'Analytics', 'Auth', 'Message'],
   endpoints: (builder) => ({
     // Auth Endpoints
     login: builder.mutation({
@@ -213,6 +213,27 @@ export const api = createApi({
       }),
       providesTags: ['Analytics'],
     }),
+
+    // Message Endpoints
+    getMessages: builder.query({
+      query: () => '/messages',
+      providesTags: ['Message'],
+    }),
+    createMessage: builder.mutation({
+      query: (message) => ({
+        url: '/messages',
+        method: 'POST',
+        body: message,
+      }),
+      invalidatesTags: ['Message'],
+    }),
+    deleteMessage: builder.mutation({
+      query: (id) => ({
+        url: `/messages/${id}`,
+        method: 'DELETE',
+      }),
+      invalidatesTags: ['Message'],
+    }),
   }),
 });
 
@@ -245,4 +266,7 @@ export const {
   useGetRevenueOverTimeQuery,
   useGetTopProductsQuery,
   useGetLowStockQuery,
+  useGetMessagesQuery,
+  useCreateMessageMutation,
+  useDeleteMessageMutation,
 } = api;
