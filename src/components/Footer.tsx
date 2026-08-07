@@ -88,7 +88,7 @@ export default function Footer() {
             </p>
             <div className="flex items-center space-x-3">
               <a
-                href="https://www.facebook.com/profile.php?id=61592732604172&rdid=rBw0V9jHdRZf9Hxe&share_url=https%3A%2F%2Fwww.facebook.com%2Fshare%2F1FBJQnxiEP#"
+                href="https://www.facebook.com/profile.php?id=61592732604172"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2.5 bg-card-bg border border-card-border rounded-full text-white hover:text-accent hover:border-accent hover:scale-105 transition-all duration-200 flex items-center justify-center shadow-xs"
@@ -98,7 +98,7 @@ export default function Footer() {
                 <FacebookIcon className="h-4 w-4" />
               </a>
               <a
-                href="https://www.instagram.com/urbanstyle_172/?igsh=dzR0ZzVwbTQxNGZh&fbclid=IwY2xjawTjDfZwZG9mBWV4dG4DYWVtAjEwAGJyaWQRMUFVbEZMam1kQ0Fva1dFakJzcnRjBmFwcF9pZBAyMjIwMzkxNzg4MjAwODkyAAEe_Bgq9BvuubgLQpDp6n1jK0QW2Wqj2GA0eFqzeS1THD2yiKJw9ejerUu85f8_aem_xZpTEXQRvIiU2YSmRFoHag"
+                href="https://www.instagram.com/urbanstyle_172/"
                 target="_blank"
                 rel="noopener noreferrer"
                 className="p-2.5 bg-card-bg border border-card-border rounded-full text-white hover:text-accent hover:border-accent hover:scale-105 transition-all duration-200 flex items-center justify-center shadow-xs"
