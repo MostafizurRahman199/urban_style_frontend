@@ -11,6 +11,7 @@ import {
   useDeleteProductImageMutation,
 } from '@/redux/services/api';
 import { Plus, Edit2, Trash2, X, Check, ShoppingBag, Eye, Star, Upload, Trash, Image as ImageIcon, AlertCircle } from 'lucide-react';
+import RichTextEditor from '@/components/RichTextEditor';
 
 export default function ProductsAdminPage() {
   // Query Filter States
@@ -43,9 +44,11 @@ export default function ProductsAdminPage() {
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
   const [price, setPrice] = useState('');
+  const [discountPrice, setDiscountPrice] = useState('');
   const [quantity, setQuantity] = useState('');
   const [categoryId, setCategoryId] = useState('');
   const [colorsInput, setColorsInput] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
   const [isPopular, setIsPopular] = useState(false);
   const [isActive, setIsActive] = useState(true);
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
@@ -67,9 +70,11 @@ export default function ProductsAdminPage() {
     setName('');
     setDescription('');
     setPrice('');
+    setDiscountPrice('');
     setQuantity('');
     setCategoryId('');
     setColorsInput('');
+    setVideoUrl('');
     setIsPopular(false);
     setIsActive(true);
     setSelectedFiles(null);
@@ -87,8 +92,10 @@ export default function ProductsAdminPage() {
     formData.append('name', name);
     formData.append('description', description);
     formData.append('price', price);
+    if (discountPrice.trim()) formData.append('discountPrice', discountPrice.trim());
     formData.append('quantity', quantity);
     formData.append('categoryId', categoryId);
+    if (videoUrl.trim()) formData.append('videoUrl', videoUrl.trim());
     formData.append('isPopular', String(isPopular));
     formData.append('isActive', String(isActive));
 
@@ -142,9 +149,11 @@ export default function ProductsAdminPage() {
     setName(product.name);
     setDescription(product.description);
     setPrice(String(product.price));
+    setDiscountPrice(product.discountPrice ? String(product.discountPrice) : '');
     setQuantity(String(product.quantity));
     setCategoryId(product.categoryId);
     setColorsInput(product.colors?.join(', ') || '');
+    setVideoUrl(product.videoUrl || '');
     setIsPopular(product.isPopular);
     setIsActive(product.isActive);
     setIsEditOpen(true);
@@ -164,11 +173,13 @@ export default function ProductsAdminPage() {
       name,
       description,
       price: parseFloat(price),
+      ...(discountPrice.trim() ? { discountPrice: parseFloat(discountPrice) } : { discountPrice: null }),
       quantity: parseInt(quantity, 10),
       categoryId,
       isPopular,
       isActive,
       colors: colorsArray,
+      ...(videoUrl.trim() && { videoUrl: videoUrl.trim() }),
     };
 
     try {
@@ -372,7 +383,16 @@ export default function ProductsAdminPage() {
 
                         {/* Price */}
                         <td className="py-4 font-mono font-bold">
-                          ৳{Number(prod.price).toFixed(2)}
+                          {prod.discountPrice && Number(prod.discountPrice) > 0 && Number(prod.discountPrice) < Number(prod.price) ? (
+                            <div className="flex flex-col">
+                              <span className="text-accent">৳{Number(prod.discountPrice).toFixed(2)}</span>
+                              <span className="text-[10px] text-muted-text line-through decoration-red-500">
+                                ৳{Number(prod.price).toFixed(2)}
+                              </span>
+                            </div>
+                          ) : (
+                            <span>৳{Number(prod.price).toFixed(2)}</span>
+                          )}
                         </td>
 
                         {/* Stock */}
@@ -496,17 +516,14 @@ export default function ProductsAdminPage() {
 
                 <div className="space-y-1">
                   <label className="text-xs uppercase tracking-widest text-muted-text font-bold">Description *</label>
-                  <textarea
-                    required
-                    rows={3}
-                    placeholder="Provide details about fit, quality, material..."
+                  <RichTextEditor
                     value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors resize-none"
+                    onChange={setDescription}
+                    placeholder="Provide details about fit, quality, material..."
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-1">
                     <label className="text-xs uppercase tracking-widest text-muted-text font-bold">Price (৳) *</label>
                     <input
@@ -516,6 +533,18 @@ export default function ProductsAdminPage() {
                       placeholder="89.99"
                       value={price}
                       onChange={(e) => setPrice(e.target.value)}
+                      className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs uppercase tracking-widest text-muted-text font-bold">Discount (৳)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      placeholder="Optional"
+                      value={discountPrice}
+                      onChange={(e) => setDiscountPrice(e.target.value)}
                       className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors"
                     />
                   </div>
@@ -557,6 +586,17 @@ export default function ProductsAdminPage() {
                     placeholder="e.g. Blue, Black, White"
                     value={colorsInput}
                     onChange={(e) => setColorsInput(e.target.value)}
+                    className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-xs uppercase tracking-widest text-muted-text font-bold">YouTube Video URL (Optional)</label>
+                  <input
+                    type="url"
+                    placeholder="https://youtube.com/watch?v=..."
+                    value={videoUrl}
+                    onChange={(e) => setVideoUrl(e.target.value)}
                     className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors"
                   />
                 </div>
@@ -718,16 +758,14 @@ export default function ProductsAdminPage() {
 
                   <div className="space-y-1">
                     <label className="text-xs uppercase tracking-widest text-muted-text font-bold">Description</label>
-                    <textarea
-                      required
-                      rows={3}
+                    <RichTextEditor
                       value={description}
-                      onChange={(e) => setDescription(e.target.value)}
-                      className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors resize-none"
+                      onChange={setDescription}
+                      placeholder="Provide details about fit, quality, material..."
                     />
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div className="space-y-1">
                       <label className="text-xs uppercase tracking-widest text-muted-text font-bold">Price (৳)</label>
                       <input
@@ -736,6 +774,17 @@ export default function ProductsAdminPage() {
                         required
                         value={price}
                         onChange={(e) => setPrice(e.target.value)}
+                        className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors"
+                      />
+                    </div>
+
+                    <div className="space-y-1">
+                      <label className="text-xs uppercase tracking-widest text-muted-text font-bold">Discount (৳)</label>
+                      <input
+                        type="number"
+                        step="0.01"
+                        value={discountPrice}
+                        onChange={(e) => setDiscountPrice(e.target.value)}
                         className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors"
                       />
                     </div>
@@ -774,6 +823,16 @@ export default function ProductsAdminPage() {
                       type="text"
                       value={colorsInput}
                       onChange={(e) => setColorsInput(e.target.value)}
+                      className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors"
+                    />
+                  </div>
+
+                  <div className="space-y-1">
+                    <label className="text-xs uppercase tracking-widest text-muted-text font-bold">YouTube Video URL</label>
+                    <input
+                      type="url"
+                      value={videoUrl}
+                      onChange={(e) => setVideoUrl(e.target.value)}
                       className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors"
                     />
                   </div>

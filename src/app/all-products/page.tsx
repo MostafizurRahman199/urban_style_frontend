@@ -330,6 +330,7 @@ interface ProductCardProps {
     name: string;
     description: string;
     price: number;
+    discountPrice?: number;
     quantity: number;
     colors: string[];
     isPopular: boolean;
@@ -397,14 +398,27 @@ function ProductCard({ product }: ProductCardProps) {
             {product.name}
           </h3>
           <p className="text-xs text-muted-text line-clamp-2 mt-1 leading-relaxed">
-            {product.description}
+            {product.description?.replace(/<[^>]*>?/gm, '')}
           </p>
         </div>
 
         <div className="flex items-center justify-between pt-2 border-t border-card-border/50">
-          <span className="text-accent font-mono font-bold text-sm sm:text-base">
-            ৳{Number(product.price).toFixed(2)}
-          </span>
+          <div className="flex flex-col">
+            {product.discountPrice && Number(product.discountPrice) > 0 && Number(product.discountPrice) < Number(product.price) ? (
+              <>
+                <span className="text-accent font-mono font-bold text-sm sm:text-base leading-none">
+                  ৳{Number(product.discountPrice).toFixed(2)}
+                </span>
+                <span className="text-muted-text font-mono text-[10px] line-through decoration-red-500 leading-none mt-0.5">
+                  ৳{Number(product.price).toFixed(2)}
+                </span>
+              </>
+            ) : (
+              <span className="text-accent font-mono font-bold text-sm sm:text-base">
+                ৳{Number(product.price).toFixed(2)}
+              </span>
+            )}
+          </div>
           <span className="text-[10px] font-bold uppercase tracking-wider text-white group-hover:text-accent transition-colors border border-card-border group-hover:border-accent/40 px-2.5 py-1 rounded">
             Explore
           </span>

@@ -63,9 +63,11 @@ export default function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center space-x-1">
-            <span className="text-xl sm:text-2xl font-black tracking-widest text-accent font-sans">
-              URBAN STYLE
-            </span>
+            <img 
+              src="/urban_logo.png" 
+              alt="Urban Style Logo" 
+              className="h-8 sm:h-10 w-auto object-contain"
+            />
           </Link>
 
           {/* Desktop Nav Items */}

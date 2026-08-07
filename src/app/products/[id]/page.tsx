@@ -7,11 +7,21 @@ import { useGetProductQuery } from '@/redux/services/api';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '@/redux/slices/cartSlice';
 import { useRouter } from 'next/navigation';
-import { ShoppingCart, ArrowLeft, Shield, RotateCcw, Truck, Check, ShoppingBag } from 'lucide-react';
+import { ShoppingCart, ArrowLeft, Shield, RotateCcw, Truck, Check, ShoppingBag, PlayCircle, X } from 'lucide-react';
 import Link from 'next/link';
 
 interface PageProps {
   params: Promise<{ id: string }>;
+}
+
+function getYouTubeEmbedUrl(url: string): string {
+  if (!url) return '';
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|&v=)([^#&?]*).*/;
+  const match = url.match(regExp);
+  if (match && match[2].length === 11) {
+    return `https://www.youtube.com/embed/${match[2]}?autoplay=1`;
+  }
+  return url;
 }
 
 export default function ProductDetailPage({ params }: PageProps) {
@@ -27,6 +37,7 @@ export default function ProductDetailPage({ params }: PageProps) {
   const [quantity, setQuantity] = useState<number>(1);
   const [activeImageIdx, setActiveImageIdx] = useState<number>(0);
   const [isAdded, setIsAdded] = useState<boolean>(false);
+  const [isVideoModalOpen, setIsVideoModalOpen] = useState<boolean>(false);
 
   // Initialize selected color once product details are loaded
   React.useEffect(() => {
@@ -89,7 +100,7 @@ export default function ProductDetailPage({ params }: PageProps) {
       addToCart({
         productId: product.id,
         name: product.name,
-        price: product.price,
+        price: product.discountPrice ? product.discountPrice : product.price,
         quantity,
         color: selectedColor || 'Standard',
         imageUrl: imgUrl,
@@ -109,7 +120,7 @@ export default function ProductDetailPage({ params }: PageProps) {
       addToCart({
         productId: product.id,
         name: product.name,
-        price: product.price,
+        price: product.discountPrice ? product.discountPrice : product.price,
         quantity,
         color: selectedColor || 'Standard',
         imageUrl: imgUrl,
@@ -197,10 +208,23 @@ export default function ProductDetailPage({ params }: PageProps) {
               <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-wide text-white leading-tight">
                 {product.name}
               </h1>
-              <div className="flex items-center gap-4 pt-2">
-                <span className="text-accent font-mono font-bold text-2xl sm:text-3xl">
-                  ৳{Number(product.price).toFixed(2)}
-                </span>
+              <div className="flex flex-col pt-2">
+                {product.discountPrice && Number(product.discountPrice) > 0 && Number(product.discountPrice) < Number(product.price) ? (
+                  <div className="flex items-center gap-3">
+                    <span className="text-accent font-mono font-bold text-2xl sm:text-3xl leading-none">
+                      ৳{Number(product.discountPrice).toFixed(2)}
+                    </span>
+                    <span className="text-muted-text font-mono text-base line-through decoration-red-500 leading-none">
+                      ৳{Number(product.price).toFixed(2)}
+                    </span>
+                  </div>
+                ) : (
+                  <span className="text-accent font-mono font-bold text-2xl sm:text-3xl leading-none">
+                    ৳{Number(product.price).toFixed(2)}
+                  </span>
+                )}
+              </div>
+              <div className="flex items-center gap-4 mt-2">
                 {isOutOfStock ? (
                   <span className="text-red-500 text-xs font-semibold uppercase tracking-wider">
                     Out of Stock
@@ -215,13 +239,18 @@ export default function ProductDetailPage({ params }: PageProps) {
                   </span>
                 )}
               </div>
-            </div>
 
-            <div className="border-t border-card-border/60 pt-4">
-              <h3 className="text-xs uppercase tracking-widest text-muted-text font-bold mb-2">Description</h3>
-              <p className="text-muted-text text-sm leading-relaxed max-w-lg">
-                {product.description}
-              </p>
+              {/* Watch Video Button */}
+              {product.videoUrl && (
+                <div className="pt-2">
+                  <button
+                    onClick={() => setIsVideoModalOpen(true)}
+                    className="inline-flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold uppercase tracking-wider text-xs rounded transition-colors"
+                  >
+                    <PlayCircle className="h-4 w-4" /> Watch Video
+                  </button>
+                </div>
+              )}
             </div>
 
             {/* Colors choice (Only if product has colors) */}
@@ -329,9 +358,47 @@ export default function ProductDetailPage({ params }: PageProps) {
             </div>
           </div>
         </div>
+
+        {/* Full-Width Product Description Section at Bottom */}
+        <div className="mt-12 bg-card-bg border border-card-border rounded-lg p-6 sm:p-8 space-y-4">
+          <h3 className="text-sm font-black uppercase tracking-widest text-accent pb-3 border-b border-card-border">
+            Product Specifications & Details
+          </h3>
+          <div
+            className="text-muted-text text-sm sm:text-base leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-white [&_h2]:mt-4 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-white [&_h3]:mt-2 [&_p]:mb-2 [&_a]:text-accent [&_a]:underline"
+            dangerouslySetInnerHTML={{ __html: product.description }}
+          />
+        </div>
       </main>
 
       <Footer />
+
+      {/* Video Modal */}
+      {isVideoModalOpen && product?.videoUrl && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" onClick={() => setIsVideoModalOpen(false)} />
+          <div className="relative bg-card-bg border border-card-border rounded-lg shadow-2xl w-full max-w-4xl flex flex-col overflow-hidden animate-fade-in">
+            <div className="flex justify-between items-center p-4 border-b border-card-border">
+              <h3 className="text-sm font-bold uppercase tracking-widest text-white">Product Video</h3>
+              <button
+                onClick={() => setIsVideoModalOpen(false)}
+                className="text-muted-text hover:text-white transition-colors"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+            <div className="relative w-full aspect-video bg-black">
+              <iframe
+                className="absolute inset-0 w-full h-full"
+                src={getYouTubeEmbedUrl(product.videoUrl)}
+                title="Product Video"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

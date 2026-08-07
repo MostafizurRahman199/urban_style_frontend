@@ -8,9 +8,13 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* Logo & Description */}
           <div className="space-y-4 md:col-span-2">
-            <span className="text-xl font-black tracking-widest text-accent font-sans">
-              URBAN STYLE
-            </span>
+            <Link href="/" className="inline-block">
+              <img 
+                src="/urban_logo.png" 
+                alt="Urban Style Logo" 
+                className="h-10 w-auto object-contain"
+              />
+            </Link>
             <p className="text-muted-text text-sm max-w-sm leading-relaxed">
               Curated premium streetwear and apparel for the fashion-forward. Blending underground culture with high-end modern design.
             </p>
