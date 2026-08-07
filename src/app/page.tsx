@@ -71,6 +71,47 @@ export default function HomePage() {
       <BannerCarousel />
 
       <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-16">
+        {/* Shop by Category Section */}
+        {categories && categories.length > 0 && (
+          <section className="space-y-6">
+            <div className="flex items-center justify-between">
+              <h2 className="text-xl sm:text-2xl font-black uppercase tracking-wider">
+                Shop By <span className="text-accent">Category</span>
+              </h2>
+              <div className="h-px bg-card-border flex-grow ml-6 hidden sm:block" />
+            </div>
+
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
+              {categories.map((cat: any) => (
+                <Link
+                  key={cat.id}
+                  href={`/all-products?category=${cat.id}`}
+                  className="group relative h-28 flex flex-col justify-end p-4 border border-card-border hover:border-accent/40 bg-card-bg hover:bg-black/40 rounded transition-all duration-300 overflow-hidden"
+                >
+                  {/* Category Icon / Image */}
+                  {cat.iconUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={cat.iconUrl}
+                      alt={cat.name}
+                      className="absolute inset-0 w-full h-full object-cover opacity-30 group-hover:opacity-40 transition-opacity duration-300"
+                    />
+                  ) : (
+                    <div className="absolute inset-0 bg-radial-gradient from-accent/5 via-transparent to-transparent opacity-50" />
+                  )}
+                  
+                  {/* Subtle color highlight */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
+
+                  <span className="relative z-20 font-black uppercase tracking-wider text-xs sm:text-sm text-white group-hover:text-accent transition-colors">
+                    {cat.name}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          </section>
+        )}
+
         {/* Popular Section */}
         {popularProductsData?.data && popularProductsData.data.length > 0 && (
           <section className="space-y-6">
@@ -85,7 +126,7 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-              {popularProductsData.data.map((product) => (
+              {popularProductsData.data.map((product: any) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>
@@ -130,7 +171,7 @@ export default function HomePage() {
             >
               All Collection
             </button>
-            {categories?.map((cat) => (
+            {categories?.map((cat: any) => (
               <button
                 key={cat.id}
                 onClick={() => handleCategorySelect(cat.id)}
@@ -174,7 +215,7 @@ export default function HomePage() {
           ) : (
             <>
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-6">
-                {productsData.data.map((product) => (
+                {productsData.data.map((product: any) => (
                   <ProductCard key={product.id} product={product} />
                 ))}
               </div>

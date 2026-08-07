@@ -17,8 +17,10 @@ export default function CategoriesAdminPage() {
 
   // Component States
   const [newCatName, setNewCatName] = useState('');
+  const [iconFile, setIconFile] = useState<File | null>(null);
   const [editId, setEditId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
+  const [editIconFile, setEditIconFile] = useState<File | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
@@ -34,8 +36,18 @@ export default function CategoriesAdminPage() {
     if (!newCatName.trim()) return;
 
     try {
-      await createCategory({ name: newCatName.trim() }).unwrap();
+      const formData = new FormData();
+      formData.append('name', newCatName.trim());
+      if (iconFile) {
+        formData.append('icon', iconFile);
+      }
+      await createCategory(formData).unwrap();
       setNewCatName('');
+      setIconFile(null);
+      
+      const fileInput = document.getElementById('category-icon-input') as HTMLInputElement;
+      if (fileInput) fileInput.value = '';
+
       setSuccessMessage('Category created successfully!');
       setTimeout(clearMessages, 3000);
     } catch (err: any) {
@@ -49,9 +61,17 @@ export default function CategoriesAdminPage() {
     if (!editName.trim()) return;
 
     try {
-      await updateCategory({ id, name: editName.trim() }).unwrap();
+      if (editIconFile) {
+        const formData = new FormData();
+        formData.append('name', editName.trim());
+        formData.append('icon', editIconFile);
+        await updateCategory({ id, body: formData }).unwrap();
+      } else {
+        await updateCategory({ id, name: editName.trim() }).unwrap();
+      }
       setEditId(null);
       setEditName('');
+      setEditIconFile(null);
       setSuccessMessage('Category updated successfully!');
       setTimeout(clearMessages, 3000);
     } catch (err: any) {
@@ -81,6 +101,7 @@ export default function CategoriesAdminPage() {
   const startEdit = (id: string, currentName: string) => {
     setEditId(id);
     setEditName(currentName);
+    setEditIconFile(null);
   };
 
   return (
@@ -128,6 +149,17 @@ export default function CategoriesAdminPage() {
                 className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-4 py-2.5 rounded text-sm outline-none transition-colors"
               />
             </div>
+
+            <div className="space-y-1">
+              <label className="text-xs uppercase tracking-widest text-muted-text font-bold">Category Icon / Image</label>
+              <input
+                id="category-icon-input"
+                type="file"
+                accept="image/*"
+                onChange={(e) => setIconFile(e.target.files?.[0] || null)}
+                className="w-full text-xs text-muted-text file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-xs file:font-bold file:uppercase file:bg-accent file:text-black file:cursor-pointer"
+              />
+            </div>
             <button
               type="submit"
               disabled={createLoading}
@@ -159,6 +191,7 @@ export default function CategoriesAdminPage() {
               <table className="w-full text-left border-collapse text-sm">
                 <thead>
                   <tr className="border-b border-card-border/80 text-muted-text text-xs uppercase tracking-widest font-bold">
+                    <th className="pb-3 w-12">Icon</th>
                     <th className="pb-3 w-1/2">Name</th>
                     <th className="pb-3 w-1/3">Slug</th>
                     <th className="pb-3 text-right">Actions</th>
@@ -167,6 +200,31 @@ export default function CategoriesAdminPage() {
                 <tbody className="divide-y divide-card-border/40">
                   {categories.map((cat: any) => (
                     <tr key={cat.id} className="hover:bg-black/20 transition-colors">
+                      {/* Icon */}
+                      <td className="py-4 pr-4">
+                        {editId === cat.id ? (
+                          <div className="flex flex-col gap-1">
+                            {cat.iconUrl && (
+                              // eslint-disable-next-line @next/next/no-img-element
+                              <img src={cat.iconUrl} alt="icon" className="h-8 w-8 object-cover rounded border border-card-border" />
+                            )}
+                            <input
+                              type="file"
+                              accept="image/*"
+                              onChange={(e) => setEditIconFile(e.target.files?.[0] || null)}
+                              className="text-[9px] text-muted-text file:mr-1 file:py-0.5 file:px-1.5 file:rounded file:border-0 file:text-[8px] file:font-bold file:uppercase file:bg-accent file:text-black file:cursor-pointer"
+                            />
+                          </div>
+                        ) : (
+                          cat.iconUrl ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img src={cat.iconUrl} alt="icon" className="h-8 w-8 object-cover rounded border border-card-border" />
+                          ) : (
+                            <span className="text-[10px] text-muted-text uppercase font-bold">No Icon</span>
+                          )
+                        )}
+                      </td>
+
                       {/* Name / Edit Input */}
                       <td className="py-4 pr-4">
                         {editId === cat.id ? (
@@ -199,7 +257,10 @@ export default function CategoriesAdminPage() {
                               <Check className="h-4 w-4" />
                             </button>
                             <button
-                              onClick={() => setEditId(null)}
+                              onClick={() => {
+                                setEditId(null);
+                                setEditIconFile(null);
+                              }}
                               className="p-1.5 bg-card-border text-muted-text rounded border border-card-border hover:bg-white hover:text-black transition-colors"
                               title="Cancel"
                             >

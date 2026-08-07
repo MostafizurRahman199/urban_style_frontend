@@ -64,7 +64,7 @@ export default function BannerCarousel() {
   return (
     <div className="relative h-[400px] sm:h-[500px] md:h-[600px] w-full bg-black overflow-hidden border-b border-card-border">
       {/* Slides */}
-      {banners.map((banner, index) => (
+      {banners.map((banner: any, index: number) => (
         <div
           key={banner.id}
           className={`absolute inset-0 w-full h-full transition-opacity duration-1000 ease-in-out ${
@@ -126,9 +126,8 @@ export default function BannerCarousel() {
             <ChevronRight className="h-5 w-5" />
           </button>
 
-          {/* Pagination Indicators */}
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex space-x-2">
-            {banners.map((_, idx) => (
+            {banners.map((_: any, idx: number) => (
               <button
                 key={idx}
                 onClick={() => setCurrentSlide(idx)}

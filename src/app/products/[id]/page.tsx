@@ -6,7 +6,8 @@ import Footer from '@/components/Footer';
 import { useGetProductQuery } from '@/redux/services/api';
 import { useDispatch } from 'react-redux';
 import { addToCart } from '@/redux/slices/cartSlice';
-import { ShoppingCart, ArrowLeft, Shield, RotateCcw, Truck, Check } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { ShoppingCart, ArrowLeft, Shield, RotateCcw, Truck, Check, ShoppingBag } from 'lucide-react';
 import Link from 'next/link';
 
 interface PageProps {
@@ -18,6 +19,7 @@ export default function ProductDetailPage({ params }: PageProps) {
   const { id } = resolvedParams;
 
   const dispatch = useDispatch();
+  const router = useRouter();
   const { data: product, isLoading, error } = useGetProductQuery(id);
 
   // Local States
@@ -32,6 +34,18 @@ export default function ProductDetailPage({ params }: PageProps) {
       setSelectedColor(product.colors[0]);
     }
   }, [product]);
+
+  // Update active image index to the first image matching the selected color, if one exists
+  React.useEffect(() => {
+    if (selectedColor && product && product.images) {
+      const idx = product.images.findIndex(
+        (img: any) => img.color && img.color.toLowerCase() === selectedColor.toLowerCase()
+      );
+      if (idx !== -1) {
+        setActiveImageIdx(idx);
+      }
+    }
+  }, [selectedColor, product]);
 
   if (isLoading) {
     return (
@@ -87,6 +101,25 @@ export default function ProductDetailPage({ params }: PageProps) {
     setTimeout(() => setIsAdded(false), 2000);
   };
 
+  const handleOrderNow = () => {
+    if (isOutOfStock) return;
+    const imgUrl = product.images?.[0]?.url;
+
+    dispatch(
+      addToCart({
+        productId: product.id,
+        name: product.name,
+        price: product.price,
+        quantity,
+        color: selectedColor || 'Standard',
+        imageUrl: imgUrl,
+        stock: product.quantity,
+      })
+    );
+
+    router.push('/checkout');
+  };
+
   const images = product.images || [];
   const mainImage = images[activeImageIdx]?.url;
 
@@ -131,7 +164,7 @@ export default function ProductDetailPage({ params }: PageProps) {
             {/* Thumbnails */}
             {images.length > 1 && (
               <div className="flex gap-3 overflow-x-auto pb-2">
-                {images.map((img, idx) => (
+                {images.map((img: any, idx: number) => (
                   <button
                     key={img.id || idx}
                     onClick={() => setActiveImageIdx(idx)}
@@ -198,7 +231,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                   Select Color: <span className="text-white uppercase font-bold ml-1">{selectedColor}</span>
                 </span>
                 <div className="flex flex-wrap gap-2">
-                  {product.colors.map((color) => (
+                  {product.colors.map((color: string) => (
                     <button
                       key={color}
                       onClick={() => setSelectedColor(color)}
@@ -239,7 +272,14 @@ export default function ProductDetailPage({ params }: PageProps) {
                   </div>
                 </div>
 
-                <div className="pt-2">
+                <div className="pt-2 flex flex-col sm:flex-row gap-4">
+                  <button
+                    onClick={handleOrderNow}
+                    className="w-full sm:w-auto px-10 py-4 rounded font-bold uppercase tracking-wider text-sm flex items-center justify-center gap-3 transition-colors bg-white text-black hover:bg-white/90"
+                  >
+                    <ShoppingBag className="h-5 w-5" /> Order Now
+                  </button>
+
                   <button
                     onClick={handleAddToCart}
                     disabled={isAdded}

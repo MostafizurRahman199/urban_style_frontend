@@ -45,11 +45,14 @@ export const api = createApi({
       invalidatesTags: ['Category', 'Product'],
     }),
     updateCategory: builder.mutation({
-      query: ({ id, ...category }) => ({
-        url: `/categories/${id}`,
-        method: 'PATCH',
-        body: category,
-      }),
+      query: ({ id, ...data }) => {
+        const body = data.body !== undefined ? data.body : data;
+        return {
+          url: `/categories/${id}`,
+          method: 'PATCH',
+          body,
+        };
+      },
       invalidatesTags: ['Category', 'Product'],
     }),
     deleteCategory: builder.mutation({

@@ -50,8 +50,10 @@ export default function ProductsAdminPage() {
   const [isActive, setIsActive] = useState(true);
   const [selectedFiles, setSelectedFiles] = useState<FileList | null>(null);
 
-  // Additional Image Upload
+  // Additional Image Upload & Color Mappings
   const [appendFiles, setAppendFiles] = useState<FileList | null>(null);
+  const [appendColor, setAppendColor] = useState('');
+  const [colorImageRows, setColorImageRows] = useState<{ color: string; files: FileList | null }[]>([]);
 
   // Error/Success
   const [msg, setMsg] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -71,6 +73,7 @@ export default function ProductsAdminPage() {
     setIsPopular(false);
     setIsActive(true);
     setSelectedFiles(null);
+    setColorImageRows([]);
   };
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
@@ -94,14 +97,34 @@ export default function ProductsAdminPage() {
       .split(',')
       .map((c) => c.trim())
       .filter((c) => c !== '');
+
+    // Incorporate any colors defined in color-specific image rows
+    colorImageRows.forEach((row) => {
+      const trimmedColor = row.color.trim();
+      if (trimmedColor && !colorsArray.includes(trimmedColor)) {
+        colorsArray.push(trimmedColor);
+      }
+    });
+
     colorsArray.forEach((c) => formData.append('colors[]', c));
 
-    // Handle image files
+    // Handle general image files
     if (selectedFiles) {
       for (let i = 0; i < selectedFiles.length; i++) {
         formData.append('images', selectedFiles[i]);
+        formData.append('imageColors', ''); // No color mapping for general images
       }
     }
+
+    // Handle color-specific image files
+    colorImageRows.forEach((row) => {
+      if (row.files && row.color.trim()) {
+        for (let i = 0; i < row.files.length; i++) {
+          formData.append('images', row.files[i]);
+          formData.append('imageColors', row.color.trim());
+        }
+      }
+    });
 
     try {
       await createProduct(formData).unwrap();
@@ -165,12 +188,25 @@ export default function ProductsAdminPage() {
     const formData = new FormData();
     for (let i = 0; i < appendFiles.length; i++) {
       formData.append('images', appendFiles[i]);
+      formData.append('imageColors', appendColor.trim());
     }
 
     try {
+      // If a color is specified and not present in the product's colors, add it automatically
+      if (appendColor.trim()) {
+        const trimmedColor = appendColor.trim();
+        const currentColors = selectedProduct.colors || [];
+        if (!currentColors.includes(trimmedColor)) {
+          const updatedColors = [...currentColors, trimmedColor];
+          await updateProduct({ id: selectedProduct.id, colors: updatedColors }).unwrap();
+          setColorsInput(updatedColors.join(', '));
+        }
+      }
+
       await addProductImages({ id: selectedProduct.id, formData }).unwrap();
       showMsg('success', 'Images added successfully!');
       setAppendFiles(null);
+      setAppendColor('');
       // Update selected product state to show new images in Edit view
       refetch().then((res) => {
         const updated = res.data?.data?.find((p: any) => p.id === selectedProduct.id);
@@ -565,6 +601,75 @@ export default function ProductsAdminPage() {
                   )}
                 </div>
 
+                {/* Color-Specific Images Section */}
+                <div className="space-y-3 border-t border-card-border/60 pt-4">
+                  <div className="flex justify-between items-center">
+                    <label className="text-xs uppercase tracking-widest text-muted-text font-bold flex items-center gap-1.5">
+                      <ImageIcon className="h-4 w-4 text-accent" /> Color Specific Images
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => setColorImageRows([...colorImageRows, { color: '', files: null }])}
+                      className="px-2.5 py-1 bg-card-bg border border-card-border hover:border-accent text-accent font-bold uppercase tracking-wider text-[10px] transition-colors rounded cursor-pointer"
+                    >
+                      + Add Color and Image
+                    </button>
+                  </div>
+
+                  {colorImageRows.map((row, idx) => (
+                    <div key={idx} className="flex flex-col sm:flex-row gap-3 p-3 bg-card-bg border border-card-border rounded relative">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const updated = [...colorImageRows];
+                          updated.splice(idx, 1);
+                          setColorImageRows(updated);
+                        }}
+                        className="absolute -top-2 -right-2 p-1 bg-red-600 hover:bg-red-700 text-white rounded-full transition-colors cursor-pointer"
+                      >
+                        <X className="h-3 w-3" />
+                      </button>
+
+                      <div className="flex-1 space-y-1">
+                        <label className="text-[9px] uppercase tracking-widest text-muted-text font-bold">Color Name</label>
+                        <input
+                          type="text"
+                          required
+                          placeholder="e.g. Red"
+                          value={row.color}
+                          onChange={(e) => {
+                            const updated = [...colorImageRows];
+                            updated[idx].color = e.target.value;
+                            setColorImageRows(updated);
+                          }}
+                          className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-3 py-1.5 rounded text-xs outline-none transition-colors"
+                        />
+                      </div>
+
+                      <div className="flex-grow space-y-1">
+                        <label className="text-[9px] uppercase tracking-widest text-muted-text font-bold">Upload Images</label>
+                        <input
+                          type="file"
+                          multiple
+                          required
+                          accept="image/*"
+                          onChange={(e) => {
+                            const updated = [...colorImageRows];
+                            updated[idx].files = e.target.files;
+                            setColorImageRows(updated);
+                          }}
+                          className="w-full text-[10px] text-muted-text file:mr-2 file:py-1 file:px-2.5 file:rounded file:border-0 file:text-[9px] file:font-bold file:uppercase file:bg-accent file:text-black file:cursor-pointer"
+                        />
+                        {row.files && (
+                          <p className="text-[9px] text-accent font-bold uppercase">
+                            {row.files.length} files selected
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
                 <div className="pt-4">
                   <button
                     type="submit"
@@ -716,6 +821,11 @@ export default function ProductsAdminPage() {
                       <div key={img.id} className="relative aspect-square border border-card-border rounded overflow-hidden group bg-black flex items-center justify-center">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img src={img.url} alt="product" className="h-full w-full object-cover" />
+                        {img.color && (
+                          <span className="absolute top-1 left-1 bg-accent text-black text-[9px] px-1.5 py-0.5 rounded font-extrabold uppercase z-10 pointer-events-none">
+                            {img.color}
+                          </span>
+                        )}
                         <button
                           type="button"
                           onClick={() => handleDeleteImage(img.id)}
@@ -737,22 +847,40 @@ export default function ProductsAdminPage() {
                     <label className="text-[10px] uppercase tracking-widest text-muted-text font-bold block">
                       Append Additional Images:
                     </label>
-                    <div className="flex gap-2 items-center">
-                      <input
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        onChange={(e) => setAppendFiles(e.target.files)}
-                        className="flex-grow text-xs text-muted-text file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-[10px] file:font-bold file:uppercase file:bg-accent file:text-black file:cursor-pointer"
-                      />
-                      <button
-                        type="submit"
-                        disabled={uploadLoading || !appendFiles}
-                        className="px-4 py-2 bg-accent text-black font-extrabold uppercase tracking-wider text-[10px] hover:bg-accent-hover transition-colors rounded disabled:opacity-40"
-                      >
-                        {uploadLoading ? 'Uploading...' : 'Upload'}
-                      </button>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                      <div className="space-y-1">
+                        <label className="text-[9px] uppercase tracking-widest text-muted-text font-bold">Associated Color (Optional)</label>
+                        <input
+                          type="text"
+                          placeholder="e.g. Red (Leave empty for general)"
+                          value={appendColor}
+                          onChange={(e) => setAppendColor(e.target.value)}
+                          className="w-full bg-input-bg border border-input-border focus:border-accent text-white px-3 py-1.5 rounded text-xs outline-none transition-colors"
+                        />
+                      </div>
+                      <div className="space-y-1">
+                        <label className="text-[9px] uppercase tracking-widest text-muted-text font-bold">Select Files</label>
+                        <input
+                          type="file"
+                          multiple
+                          accept="image/*"
+                          onChange={(e) => setAppendFiles(e.target.files)}
+                          className="w-full text-xs text-muted-text file:mr-4 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-[10px] file:font-bold file:uppercase file:bg-accent file:text-black file:cursor-pointer"
+                        />
+                      </div>
                     </div>
+                    {appendFiles && (
+                      <p className="text-[10px] text-accent font-bold uppercase">
+                        {appendFiles.length} files selected
+                      </p>
+                    )}
+                    <button
+                      type="submit"
+                      disabled={uploadLoading || !appendFiles}
+                      className="w-full py-2 bg-accent text-black font-extrabold uppercase tracking-wider text-[10px] hover:bg-accent-hover transition-colors rounded disabled:opacity-40"
+                    >
+                      {uploadLoading ? 'Uploading...' : 'Upload Images'}
+                    </button>
                   </form>
                 </div>
               </div>
