@@ -213,7 +213,7 @@ export default function ProductDetailPage({ params }: PageProps) {
                   {product.category.name}
                 </span>
               )}
-              <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-wide text-white leading-tight">
+              <h1 className="text-2xl sm:text-4xl font-black uppercase tracking-wide text-white leading-tight break-words [overflow-wrap:anywhere]">
                 {product.name}
               </h1>
               <div className="flex flex-col pt-2">
@@ -392,12 +392,12 @@ export default function ProductDetailPage({ params }: PageProps) {
         </div>
 
         {/* Full-Width Product Description Section at Bottom */}
-        <div className="mt-12 bg-card-bg  rounded-lg p-6 sm:p-8 space-y-4">
-          <h3 className="text-sm font-black uppercase tracking-widest text-accent pb-3 border-b border-card-border">
+        <div className="mt-12 bg-card-bg rounded-lg p-4 sm:p-8 space-y-4 w-full max-w-full overflow-hidden break-words">
+          <h3 className="text-sm font-black uppercase tracking-widest text-accent pb-3 border-b border-card-border break-words">
             Product Specifications & Details
           </h3>
           <div
-            className="text-muted-text text-sm sm:text-base leading-relaxed space-y-3 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-6 [&_li]:my-1 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-white [&_h2]:mt-4 [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-white [&_h3]:mt-2 [&_p]:mb-2 [&_a]:text-accent [&_a]:underline"
+            className="text-muted-text text-sm sm:text-base leading-relaxed space-y-3 w-full max-w-full break-words [overflow-wrap:anywhere] [word-break:break-word] [&_ul]:list-disc [&_ul]:pl-5 sm:[&_ul]:pl-6 [&_ol]:list-decimal [&_ol]:pl-5 sm:[&_ol]:pl-6 [&_li]:my-1 [&_h2]:text-lg [&_h2]:font-bold [&_h2]:text-white [&_h2]:mt-4 [&_h2]:break-words [&_h3]:text-base [&_h3]:font-semibold [&_h3]:text-white [&_h3]:mt-2 [&_h3]:break-words [&_p]:mb-2 [&_p]:break-words [&_a]:text-accent [&_a]:underline [&_a]:break-all [&_img]:max-w-full [&_img]:h-auto [&_table]:max-w-full [&_table]:block [&_table]:overflow-x-auto [&_*]:max-w-full [&_*]:break-words"
             dangerouslySetInnerHTML={{ __html: product.description }}
           />
         </div>
