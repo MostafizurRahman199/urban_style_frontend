@@ -16,6 +16,11 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Urban Style | Premium E-Commerce Store",
   description: "Discover the latest trends in urban fashion. High-quality streetwear and apparel selected for the modern lifestyle.",
+  icons: {
+    icon: "/urban_logo.png",
+    shortcut: "/urban_logo.png",
+    apple: "/urban_logo.png",
+  },
 };
 
 export default function RootLayout({
