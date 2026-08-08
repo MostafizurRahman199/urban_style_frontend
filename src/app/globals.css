@@ -38,6 +38,33 @@ body {
   min-height: 100vh;
 }
 
+/* Ensure all clickable / interactive elements have hover cursor pointer */
+button,
+a,
+select,
+summary,
+label,
+[role="button"],
+[type="button"],
+[type="submit"],
+[type="reset"],
+[type="checkbox"],
+[type="radio"],
+[type="file"],
+[onclick],
+[tabindex]:not([tabindex="-1"]) {
+  cursor: pointer;
+}
+
+button:disabled,
+input:disabled,
+select:disabled,
+textarea:disabled,
+[aria-disabled="true"],
+:disabled {
+  cursor: not-allowed;
+}
+
 /* Custom Scrollbar for Premium Look */
 ::-webkit-scrollbar {
   width: 6px;
