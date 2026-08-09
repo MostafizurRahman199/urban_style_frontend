@@ -40,7 +40,14 @@ export default function ProductsAdminPage() {
   // Modal / Form States
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isEditOpen, setIsEditOpen] = useState(false);
+  const [isViewOpen, setIsViewOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<any>(null);
+  const [viewProduct, setViewProduct] = useState<any>(null);
+
+  const openView = (product: any) => {
+    setViewProduct(product);
+    setIsViewOpen(true);
+  };
 
   // Forms State
   const [name, setName] = useState('');
@@ -508,6 +515,13 @@ export default function ProductsAdminPage() {
                         {/* Actions */}
                         <td className="py-4 px-2 text-right">
                           <div className="flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => openView(prod)}
+                              className="p-1.5 border border-card-border rounded hover:border-accent/40 text-muted-text hover:text-accent transition-colors"
+                              title="View Product Details"
+                            >
+                              <Eye className="h-4 w-4" />
+                            </button>
                             <button
                               onClick={() => openEdit(prod)}
                               className="p-1.5 border border-card-border rounded hover:border-accent/40 text-muted-text hover:text-accent transition-colors"
@@ -1132,6 +1146,212 @@ export default function ProductsAdminPage() {
                   </form>
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* VIEW PRODUCT MODAL */}
+      {isViewOpen && viewProduct && (
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-xs flex items-center justify-center p-4 sm:p-6 animate-fade-in">
+          <div className="bg-black border border-card-border rounded-xl shadow-2xl w-full max-w-3xl max-h-[90vh] flex flex-col text-white overflow-hidden">
+            {/* Modal Header */}
+            <div className="px-6 py-4 border-b border-card-border flex items-center justify-between bg-card-bg/50">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-accent/10 border border-accent/20 rounded-lg text-accent">
+                  <Eye className="h-5 w-5" />
+                </div>
+                <div>
+                  <h2 className="text-base sm:text-lg font-black uppercase tracking-wider text-white">
+                    Product Overview
+                  </h2>
+                  <p className="text-[10px] text-muted-text font-mono uppercase tracking-widest">
+                    ID: {viewProduct.id}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsViewOpen(false)}
+                className="p-1.5 text-muted-text hover:text-white rounded-lg border border-transparent hover:border-card-border transition-colors cursor-pointer"
+              >
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 overflow-y-auto space-y-6 flex-1 custom-scrollbar">
+              {/* Product Header Banner */}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 p-4 bg-card-bg border border-card-border rounded-lg">
+                <div>
+                  <span className="text-[10px] font-extrabold uppercase tracking-widest text-accent">
+                    {viewProduct.category?.name || 'Uncategorized'}
+                  </span>
+                  <h3 className="text-xl font-bold text-white mt-0.5">{viewProduct.name}</h3>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  {viewProduct.isPopular && (
+                    <span className="px-2.5 py-1 bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-bold uppercase rounded flex items-center gap-1">
+                      <Star className="h-3 w-3 fill-amber-400" /> Popular
+                    </span>
+                  )}
+                  <span
+                    className={`px-2.5 py-1 rounded text-xs font-bold uppercase border ${
+                      viewProduct.isActive
+                        ? 'bg-green-600/10 border-green-500/30 text-green-500'
+                        : 'bg-card-border border-card-border text-muted-text'
+                    }`}
+                  >
+                    {viewProduct.isActive ? 'Active' : 'Hidden'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Pricing & Stock Stats */}
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                <div className="p-3 bg-card-bg border border-card-border rounded-lg">
+                  <span className="text-[10px] uppercase font-bold text-muted-text tracking-widest block">Original Price</span>
+                  <span className="text-lg font-mono font-bold text-white">৳{Number(viewProduct.price).toFixed(2)}</span>
+                </div>
+                <div className="p-3 bg-card-bg border border-card-border rounded-lg">
+                  <span className="text-[10px] uppercase font-bold text-muted-text tracking-widest block">Discount Price</span>
+                  <span className="text-lg font-mono font-bold text-accent">
+                    {viewProduct.discountPrice && Number(viewProduct.discountPrice) > 0
+                      ? `৳${Number(viewProduct.discountPrice).toFixed(2)}`
+                      : 'N/A'}
+                  </span>
+                </div>
+                <div className="p-3 bg-card-bg border border-card-border rounded-lg">
+                  <span className="text-[10px] uppercase font-bold text-muted-text tracking-widest block">Stock Quantity</span>
+                  <span
+                    className={`text-lg font-mono font-bold ${
+                      viewProduct.quantity <= 0
+                        ? 'text-red-500'
+                        : viewProduct.quantity <= 5
+                        ? 'text-amber-500'
+                        : 'text-white'
+                    }`}
+                  >
+                    {viewProduct.quantity} pcs
+                  </span>
+                </div>
+                <div className="p-3 bg-card-bg border border-card-border rounded-lg">
+                  <span className="text-[10px] uppercase font-bold text-muted-text tracking-widest block">Delivery Charge</span>
+                  <span className="text-lg font-mono font-bold text-white">
+                    ৳{Number(viewProduct.deliveryCharge || 0).toFixed(2)}
+                  </span>
+                </div>
+              </div>
+
+              {/* Colors & Sizes Row */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Colors */}
+                <div className="p-4 bg-card-bg border border-card-border rounded-lg space-y-2">
+                  <h4 className="text-xs uppercase font-extrabold tracking-widest text-muted-text">Available Colors</h4>
+                  {viewProduct.colors && viewProduct.colors.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {viewProduct.colors.map((color: string, idx: number) => (
+                        <span
+                          key={idx}
+                          className="px-2.5 py-1 bg-black border border-card-border rounded text-xs font-bold uppercase text-white"
+                        >
+                          {color}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-text italic">No specific colors specified</p>
+                  )}
+                </div>
+
+                {/* Sizes */}
+                <div className="p-4 bg-card-bg border border-card-border rounded-lg space-y-2">
+                  <h4 className="text-xs uppercase font-extrabold tracking-widest text-muted-text">Available Sizes</h4>
+                  {viewProduct.sizes && viewProduct.sizes.length > 0 ? (
+                    <div className="flex flex-wrap gap-2">
+                      {viewProduct.sizes.map((size: string, idx: number) => (
+                        <span
+                          key={idx}
+                          className="px-2.5 py-1 bg-black border border-card-border rounded text-xs font-bold uppercase text-accent"
+                        >
+                          {size}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-muted-text italic">No specific sizes specified</p>
+                  )}
+                </div>
+              </div>
+
+              {/* Product Description */}
+              <div className="p-4 bg-card-bg border border-card-border rounded-lg space-y-2">
+                <h4 className="text-xs uppercase font-extrabold tracking-widest text-muted-text">Description</h4>
+                <div
+                  className="prose prose-invert max-w-none text-xs text-slate-300 leading-relaxed overflow-hidden break-words"
+                  dangerouslySetInnerHTML={{ __html: viewProduct.description || '<p>No description provided.</p>' }}
+                />
+              </div>
+
+              {/* Images Gallery */}
+              <div className="p-4 bg-card-bg border border-card-border rounded-lg space-y-3">
+                <h4 className="text-xs uppercase font-extrabold tracking-widest text-muted-text">
+                  Product Images ({viewProduct.images?.length || 0})
+                </h4>
+                {viewProduct.images && viewProduct.images.length > 0 ? (
+                  <div className="grid grid-cols-3 sm:grid-cols-5 gap-3">
+                    {viewProduct.images.map((img: any) => (
+                      <div
+                        key={img.id}
+                        className="relative aspect-square border border-card-border rounded-lg overflow-hidden bg-black group"
+                      >
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img src={img.url} alt={viewProduct.name} className="h-full w-full object-cover" />
+                        {img.color && (
+                          <span className="absolute top-1 left-1 bg-accent text-black text-[9px] px-1.5 py-0.5 rounded font-extrabold uppercase z-10 pointer-events-none">
+                            {img.color}
+                          </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-text italic">No gallery images uploaded for this product.</p>
+                )}
+              </div>
+
+              {/* YouTube Video URL if available */}
+              {viewProduct.videoUrl && (
+                <div className="p-4 bg-card-bg border border-card-border rounded-lg space-y-2">
+                  <h4 className="text-xs uppercase font-extrabold tracking-widest text-muted-text">Product Video URL</h4>
+                  <a
+                    href={viewProduct.videoUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs text-accent hover:underline break-all inline-block"
+                  >
+                    {viewProduct.videoUrl}
+                  </a>
+                </div>
+              )}
+            </div>
+
+            {/* Modal Footer */}
+            <div className="px-6 py-4 border-t border-card-border flex justify-end gap-3 bg-card-bg/50">
+              <button
+                onClick={() => {
+                  setIsViewOpen(false);
+                  openEdit(viewProduct);
+                }}
+                className="px-4 py-2 bg-card-bg border border-card-border hover:border-accent text-accent font-bold uppercase tracking-wider text-xs rounded transition-colors cursor-pointer"
+              >
+                Edit Product
+              </button>
+              <button
+                onClick={() => setIsViewOpen(false)}
+                className="px-5 py-2 bg-accent text-black font-extrabold uppercase tracking-wider text-xs hover:bg-accent-hover transition-colors rounded cursor-pointer"
+              >
+                Close
+              </button>
             </div>
           </div>
         </div>
