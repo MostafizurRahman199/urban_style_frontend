@@ -36,6 +36,13 @@ function AllProductsContent() {
     setPage(1);
   }, [categoryParam]);
 
+  // Scroll to top whenever page changes
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [page]);
+
   // Queries
   const { data: categories } = useGetCategoriesQuery(undefined);
   const { data: productsData, isLoading: productsLoading, isFetching: productsFetching } = useGetProductsQuery({
@@ -90,6 +97,9 @@ function AllProductsContent() {
   const handlePageChange = (newPage: number) => {
     if (newPage < 1 || (productsData?.meta && newPage > productsData.meta.totalPages)) return;
     setPage(newPage);
+    if (typeof window !== 'undefined') {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
   };
 
   return (
@@ -379,9 +389,10 @@ function AllProductsContent() {
                   </span>
                   <div className="flex items-center space-x-2">
                     <button
+                      type="button"
                       onClick={() => handlePageChange(page - 1)}
                       disabled={page === 1}
-                      className="p-2 border border-card-border rounded bg-card-bg hover:bg-card-border disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-white"
+                      className="p-2 border border-card-border rounded bg-card-bg hover:bg-card-border disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-white cursor-pointer"
                     >
                       <ChevronLeft className="h-4 w-4" />
                     </button>
@@ -389,9 +400,10 @@ function AllProductsContent() {
                       const pageNum = idx + 1;
                       return (
                         <button
+                          type="button"
                           key={pageNum}
                           onClick={() => handlePageChange(pageNum)}
-                          className={`w-8 h-8 rounded text-xs font-mono border transition-colors ${
+                          className={`w-8 h-8 rounded text-xs font-mono border transition-colors cursor-pointer ${
                             pageNum === page
                               ? 'bg-accent border-accent text-black font-bold'
                               : 'bg-card-bg border-card-border text-white hover:bg-card-border'
@@ -402,9 +414,10 @@ function AllProductsContent() {
                       );
                     })}
                     <button
+                      type="button"
                       onClick={() => handlePageChange(page + 1)}
                       disabled={page === productsData.meta.totalPages}
-                      className="p-2 border border-card-border rounded bg-card-bg hover:bg-card-border disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-white"
+                      className="p-2 border border-card-border rounded bg-card-bg hover:bg-card-border disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-white cursor-pointer"
                     >
                       <ChevronRight className="h-4 w-4" />
                     </button>
