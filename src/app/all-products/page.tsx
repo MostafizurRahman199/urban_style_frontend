@@ -496,39 +496,39 @@ function ProductCard({ product }: ProductCardProps) {
       </div>
 
       {/* Info */}
-      <div className="p-4 flex-grow flex flex-col justify-between space-y-2">
+      <div className="p-3 sm:p-4 flex-grow flex flex-col justify-between space-y-2">
         <div>
           {product.category?.name && (
             <span className="text-[10px] text-accent font-bold uppercase tracking-wider">
               {product.category.name}
             </span>
           )}
-          <h3 className="text-sm font-semibold tracking-wide text-white group-hover:text-accent transition-colors line-clamp-1">
+          <h3 className="text-xs sm:text-sm font-semibold tracking-wide text-white group-hover:text-accent transition-colors line-clamp-1">
             {product.name}
           </h3>
-          <p className="text-xs text-muted-text line-clamp-2 mt-1 leading-relaxed">
+          <p className="text-[11px] sm:text-xs text-muted-text line-clamp-2 mt-1 leading-relaxed">
             {product.description?.replace(/<[^>]*>?/gm, '')}
           </p>
         </div>
 
-        <div className="flex items-center justify-between pt-2 border-t border-card-border/50">
-          <div className="flex flex-col">
+        <div className="flex items-center justify-between gap-1 flex-nowrap pt-2 border-t border-card-border/50">
+          <div className="flex flex-col min-w-0 flex-shrink">
             {product.discountPrice && Number(product.discountPrice) > 0 && Number(product.discountPrice) < Number(product.price) ? (
               <>
-                <span className="text-accent font-mono font-bold text-sm sm:text-base leading-none">
+                <span className="text-accent font-mono font-bold text-xs sm:text-base leading-none truncate">
                   ৳{Number(product.discountPrice).toFixed(2)}
                 </span>
-                <span className="text-muted-text font-mono text-[10px] line-through decoration-red-500 leading-none mt-0.5">
+                <span className="text-muted-text font-mono text-[9px] sm:text-[10px] line-through decoration-red-500 leading-none mt-0.5 truncate">
                   ৳{Number(product.price).toFixed(2)}
                 </span>
               </>
             ) : (
-              <span className="text-accent font-mono font-bold text-sm sm:text-base">
+              <span className="text-accent font-mono font-bold text-xs sm:text-base leading-none truncate">
                 ৳{Number(product.price).toFixed(2)}
               </span>
             )}
           </div>
-          <span className="text-[10px] font-bold uppercase tracking-wider text-white group-hover:text-accent transition-colors border border-card-border group-hover:border-accent/40 px-2.5 py-1 rounded">
+          <span className="text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-white group-hover:text-accent transition-colors border border-card-border group-hover:border-accent/40 px-1.5 py-0.5 sm:px-2.5 sm:py-1 rounded flex-shrink-0">
             Explore
           </span>
         </div>
