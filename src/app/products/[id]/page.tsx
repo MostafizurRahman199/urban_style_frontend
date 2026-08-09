@@ -32,6 +32,14 @@ export default function ProductDetailPage({ params }: PageProps) {
   const router = useRouter();
   const { data: product, isLoading, error } = useGetProductQuery(id);
 
+  const handleBack = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/all-products');
+    }
+  };
+
   // Local States
   const [selectedColor, setSelectedColor] = useState<string>('');
   const [selectedSize, setSelectedSize] = useState<string>('');
@@ -148,12 +156,13 @@ export default function ProductDetailPage({ params }: PageProps) {
 
       <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
         {/* Back Link */}
-        <Link
-          href="/"
-          className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-muted-text hover:text-white transition-colors mb-8"
+        <button
+          type="button"
+          onClick={handleBack}
+          className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-muted-text hover:text-white transition-colors mb-8 cursor-pointer"
         >
-          <ArrowLeft className="h-4 w-4" /> Back to Collection
-        </Link>
+          <ArrowLeft className="h-4 w-4" /> Back
+        </button>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
           {/* Images Section */}

@@ -88,11 +88,13 @@ textarea:disabled,
 .custom-scrollbar {
   scrollbar-width: thin;
   scrollbar-color: var(--accent) var(--input-bg);
+  -webkit-overflow-scrolling: touch;
 }
 
 .custom-scrollbar::-webkit-scrollbar {
   width: 6px;
   height: 6px;
+  display: block;
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
@@ -103,6 +105,7 @@ textarea:disabled,
 .custom-scrollbar::-webkit-scrollbar-thumb {
   background: var(--accent);
   border-radius: 3px;
+  min-height: 24px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {

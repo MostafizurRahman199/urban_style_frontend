@@ -7,13 +7,23 @@ import { useSelector, useDispatch } from 'react-redux';
 import { RootState } from '@/redux/store';
 import { clearCart } from '@/redux/slices/cartSlice';
 import { useCreateOrderMutation } from '@/redux/services/api';
-import { ShoppingBag, CreditCard, CheckCircle, AlertCircle, Phone, MapPin, User, FileText, Truck } from 'lucide-react';
+import { ShoppingBag, CreditCard, CheckCircle, AlertCircle, Phone, MapPin, User, FileText, Truck, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 
 export default function CheckoutPage() {
   const dispatch = useDispatch();
+  const router = useRouter();
   const { items, totalAmount } = useSelector((state: RootState) => state.cart);
   const [createOrder, { isLoading }] = useCreateOrderMutation();
+
+  const handleBack = () => {
+    if (typeof window !== 'undefined' && window.history.length > 1) {
+      router.back();
+    } else {
+      router.push('/all-products');
+    }
+  };
 
   // Form States
   const [customerName, setCustomerName] = useState('');
@@ -143,7 +153,16 @@ export default function CheckoutPage() {
     <div className="flex flex-col min-h-screen bg-black text-white">
       <Navbar />
 
-      <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-10">
+      <main className="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
+        {/* Dynamic Back Button */}
+        <button
+          type="button"
+          onClick={handleBack}
+          className="inline-flex items-center gap-2 text-xs uppercase tracking-widest text-muted-text hover:text-white transition-colors mb-6 cursor-pointer"
+        >
+          <ArrowLeft className="h-4 w-4" /> Back
+        </button>
+
         <h1 className="text-2xl sm:text-3xl font-black uppercase tracking-wider mb-8">
           Checkout <span className="text-accent">Details</span>
         </h1>
@@ -266,7 +285,7 @@ export default function CheckoutPage() {
               </div>
             ) : (
               <div className="space-y-4">
-                <div className="max-h-72 overflow-y-auto space-y-3 pr-2 scrollbar-thin">
+                <div className="max-h-none lg:max-h-72 overflow-visible lg:overflow-y-auto space-y-3 lg:pr-2 custom-scrollbar">
                   {items.map((item) => (
                     <div key={`${item.productId}-${item.color}-${item.size || ''}`} className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b border-card-border/40 pb-4">
                       <div className="flex items-start gap-3.5 flex-1">
